@@ -1,8 +1,7 @@
 from textual.app import App, ComposeResult
-from textual.widgets import Header, Footer, TabbedContent, TabPane, DataTable, Button, Input, Static, Label
-from textual.containers import Container, Horizontal, Vertical
+from textual.widgets import Header, Footer, TabbedContent, TabPane, DataTable, Button, Input, Label
+from textual.containers import Horizontal, Vertical
 from textual.screen import ModalScreen
-from textual import work
 
 from .models import SSHKey, GPGKey, Database, db
 
