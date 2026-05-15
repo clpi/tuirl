@@ -92,14 +92,24 @@ class TrackerApp(App):
     #app-container {
         layout: horizontal;
         height: 100%;
+        width: 100%;
+    }
+
+    #app-title-bar {
+        height: 3;
+        padding: 1 2;
+        background: $panel;
+        color: $text;
+        text-style: bold;
+        border-bottom: solid $background;
     }
 
     #sidebar {
-        width: 25;
+        width: 30;
         height: 100%;
         dock: left;
-        background: $panel;
-        border-right: vkey $background;
+        background: $panel-darken-1;
+        border-right: solid $background;
     }
 
     #sidebar > ListView {
@@ -109,6 +119,16 @@ class TrackerApp(App):
 
     #sidebar > ListView > ListItem {
         padding: 1 2;
+    }
+
+    #sidebar > ListView > ListItem:focus {
+        background: $primary;
+        color: $text;
+    }
+
+    #sidebar > ListView:focus > ListItem.--highlight {
+        background: $primary;
+        color: $text;
     }
 
     #main-content {
@@ -122,12 +142,8 @@ class TrackerApp(App):
         padding: 1 2;
         width: 60;
         height: auto;
-        border: thick $primary 50%;
+        border: solid $primary 50%;
         background: $surface;
-        border-top: round $primary;
-        border-right: round $primary;
-        border-bottom: round $primary;
-        border-left: round $primary;
     }
 
     #title {
@@ -150,8 +166,12 @@ class TrackerApp(App):
 
     DataTable {
         height: 1fr;
-        border: round $primary;
-        background: $panel;
+        border: none;
+        background: transparent;
+    }
+
+    DataTable > .datatable--row-hover {
+        background: $surface-lighten-1;
     }
 
     .action-bar {
@@ -169,20 +189,20 @@ class TrackerApp(App):
     theme = "tokyo-night"
 
     def compose(self) -> ComposeResult:
-        yield Header()
+        yield Label("Tracker App", id="app-title-bar")
         with Horizontal(id="app-container"):
             with Vertical(id="sidebar"):
                 yield ListView(
-                    ListItem(Label("SSH Keys", classes="menu-label"), id="menu-ssh"),
-                    ListItem(Label("GPG Keys", classes="menu-label"), id="menu-gpg"),
-                    ListItem(Label("Databases", classes="menu-label"), id="menu-db"),
+                    ListItem(Label("SSH Keys", classes="menu-label"), id="menu-ssh", classes="menu-item"),
+                    ListItem(Label("GPG Keys", classes="menu-label"), id="menu-gpg", classes="menu-item"),
+                    ListItem(Label("Databases", classes="menu-label"), id="menu-db", classes="menu-item"),
                     id="menu"
                 )
 
             with Vertical(id="main-content"):
                 with Horizontal(classes="action-bar"):
                     yield Button("Add Entry", id="btn_add", variant="primary")
-                yield DataTable(id="data_table", cursor_type="row", zebra_stripes=True)
+                yield DataTable(id="data_table", cursor_type="row", zebra_stripes=False)
 
         yield Footer()
 
