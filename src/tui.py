@@ -1,5 +1,5 @@
 from textual.app import App, ComposeResult
-from textual.widgets import Header, Footer, TabbedContent, TabPane, DataTable, Button, Input, Label
+from textual.widgets import Header, Footer, DataTable, Button, Input, Label, ListView, ListItem
 from textual.containers import Horizontal, Vertical
 from textual.screen import ModalScreen
 
@@ -89,33 +89,75 @@ class DatabaseModal(ModalScreen[dict]):
 
 class TrackerApp(App):
     CSS = """
+    #app-container {
+        layout: horizontal;
+        height: 100%;
+    }
+
+    #sidebar {
+        width: 25;
+        height: 100%;
+        dock: left;
+        background: $panel;
+        border-right: vkey $background;
+    }
+
+    #sidebar > ListView {
+        height: 100%;
+        background: transparent;
+    }
+
+    #sidebar > ListView > ListItem {
+        padding: 1 2;
+    }
+
+    #main-content {
+        width: 1fr;
+        height: 100%;
+        background: $surface;
+        padding: 1 2;
+    }
+
     #dialog {
         padding: 1 2;
         width: 60;
         height: auto;
-        border: thick $background 80%;
+        border: thick $primary 50%;
         background: $surface;
+        border-top: round $primary;
+        border-right: round $primary;
+        border-bottom: round $primary;
+        border-left: round $primary;
     }
+
     #title {
         text-align: center;
         width: 100%;
         margin-bottom: 1;
         text-style: bold;
+        color: $text;
     }
+
     Horizontal {
         height: auto;
         align: center middle;
         margin-top: 1;
     }
+
     Button {
         margin: 0 1;
     }
+
     DataTable {
         height: 1fr;
+        border: round $primary;
+        background: $panel;
     }
+
     .action-bar {
         height: 3;
-        margin: 1 0;
+        margin: 0 0 1 0;
+        align: left middle;
     }
     """
 
@@ -124,70 +166,85 @@ class TrackerApp(App):
         ("a", "add_entry", "Add Entry"),
     ]
 
+    theme = "tokyo-night"
+
     def compose(self) -> ComposeResult:
         yield Header()
-        with TabbedContent(initial="ssh-tab"):
-            with TabPane("SSH", id="ssh-tab"):
-                with Horizontal(classes="action-bar"):
-                    yield Button("Add SSH Key", id="btn_add_ssh", variant="primary")
-                yield DataTable(id="ssh_table")
+        with Horizontal(id="app-container"):
+            with Vertical(id="sidebar"):
+                yield ListView(
+                    ListItem(Label("SSH Keys", classes="menu-label"), id="menu-ssh"),
+                    ListItem(Label("GPG Keys", classes="menu-label"), id="menu-gpg"),
+                    ListItem(Label("Databases", classes="menu-label"), id="menu-db"),
+                    id="menu"
+                )
 
-            with TabPane("GPG", id="gpg-tab"):
+            with Vertical(id="main-content"):
                 with Horizontal(classes="action-bar"):
-                    yield Button("Add GPG Key", id="btn_add_gpg", variant="primary")
-                yield DataTable(id="gpg_table")
+                    yield Button("Add Entry", id="btn_add", variant="primary")
+                yield DataTable(id="data_table", cursor_type="row", zebra_stripes=True)
 
-            with TabPane("Database", id="db-tab"):
-                with Horizontal(classes="action-bar"):
-                    yield Button("Add Database", id="btn_add_db", variant="primary")
-                yield DataTable(id="db_table")
         yield Footer()
 
     def on_mount(self) -> None:
-        ssh_table = self.query_one("#ssh_table", DataTable)
-        ssh_table.add_columns("Name", "Host", "User", "Port", "Identity File", "Description")
+        self.current_view = "menu-ssh"
+        table = self.query_one(DataTable)
+        self.setup_table(self.current_view)
 
-        gpg_table = self.query_one("#gpg_table", DataTable)
-        gpg_table.add_columns("Name", "Key ID", "Email", "Description")
+        # Select first item
+        menu = self.query_one(ListView)
+        menu.index = 0
 
-        db_table = self.query_one("#db_table", DataTable)
-        db_table.add_columns("Name", "Type", "Host", "Port", "User", "Database", "Description")
+    def on_list_view_selected(self, event: ListView.Selected) -> None:
+        item_id = event.item.id
+        if item_id:
+            self.current_view = item_id
+            self.setup_table(item_id)
+
+    def setup_table(self, view_id: str) -> None:
+        table = self.query_one(DataTable)
+        table.clear(columns=True)
+
+        if view_id == "menu-ssh":
+            table.add_columns("Name", "Host", "User", "Port", "Identity File", "Description")
+        elif view_id == "menu-gpg":
+            table.add_columns("Name", "Key ID", "Email", "Description")
+        elif view_id == "menu-db":
+            table.add_columns("Name", "Type", "Host", "Port", "User", "Database", "Description")
 
         self.load_data()
 
     def load_data(self) -> None:
-        ssh_table = self.query_one("#ssh_table", DataTable)
-        ssh_table.clear()
+        table = self.query_one(DataTable)
+        table.clear()
         db.connect(reuse_if_open=True)
-        for ssh in SSHKey.select():
-            ssh_table.add_row(ssh.name, ssh.host, ssh.user, str(ssh.port), ssh.identity_file or "", ssh.description or "")
 
-        gpg_table = self.query_one("#gpg_table", DataTable)
-        gpg_table.clear()
-        for gpg in GPGKey.select():
-            gpg_table.add_row(gpg.name, gpg.key_id, gpg.email, gpg.description or "")
+        if self.current_view == "menu-ssh":
+            for ssh in SSHKey.select():
+                table.add_row(ssh.name, ssh.host, ssh.user, str(ssh.port), ssh.identity_file or "", ssh.description or "")
+        elif self.current_view == "menu-gpg":
+            for gpg in GPGKey.select():
+                table.add_row(gpg.name, gpg.key_id, gpg.email, gpg.description or "")
+        elif self.current_view == "menu-db":
+            for database in Database.select():
+                table.add_row(database.name, database.type, database.host, str(database.port), database.user, database.db_name, database.description or "")
 
-        db_table = self.query_one("#db_table", DataTable)
-        db_table.clear()
-        for database in Database.select():
-            db_table.add_row(database.name, database.type, database.host, str(database.port), database.user, database.db_name, database.description or "")
-        db.close()
+        if not db.is_closed():
+            db.close()
 
     def action_add_entry(self) -> None:
-        active_tab = self.query_one(TabbedContent).active
-        if active_tab == "ssh-tab":
-            self.add_ssh()
-        elif active_tab == "gpg-tab":
-            self.add_gpg()
-        elif active_tab == "db-tab":
-            self.add_db()
+        self.add_entry()
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
-        if event.button.id == "btn_add_ssh":
+        if event.button.id == "btn_add":
+            self.add_entry()
+
+    def add_entry(self) -> None:
+        if self.current_view == "menu-ssh":
             self.add_ssh()
-        elif event.button.id == "btn_add_gpg":
+        elif self.current_view == "menu-gpg":
             self.add_gpg()
-        elif event.button.id == "btn_add_db":
+        elif self.current_view == "menu-db":
             self.add_db()
 
     def add_ssh(self) -> None:
