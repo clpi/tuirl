@@ -93,6 +93,7 @@ class TrackerApp(App):
         layout: horizontal;
         height: 100%;
         width: 100%;
+        margin: 0 1;
     }
 
     #app-title-bar {
@@ -102,6 +103,7 @@ class TrackerApp(App):
         color: $text;
         text-style: bold;
         border-bottom: solid $background;
+        margin-bottom: 1;
     }
 
     #sidebar {
@@ -109,7 +111,9 @@ class TrackerApp(App):
         height: 100%;
         dock: left;
         background: $panel-darken-1;
-        border-right: solid $background;
+        border: round $primary;
+        border-title-color: $text;
+        padding: 0 1;
     }
 
     #sidebar > ListView {
@@ -135,14 +139,17 @@ class TrackerApp(App):
         width: 1fr;
         height: 100%;
         background: $surface;
-        padding: 1 2;
+        border: round $primary;
+        border-title-color: $text;
+        padding: 0 1;
+        margin-left: 1;
     }
 
     #dialog {
         padding: 1 2;
         width: 60;
         height: auto;
-        border: solid $primary 50%;
+        border: round $primary;
         background: $surface;
     }
 
@@ -151,7 +158,7 @@ class TrackerApp(App):
         width: 100%;
         margin-bottom: 1;
         text-style: bold;
-        color: $text;
+        color: $accent;
     }
 
     Horizontal {
@@ -176,8 +183,12 @@ class TrackerApp(App):
 
     .action-bar {
         height: 3;
-        margin: 0 0 1 0;
-        align: left middle;
+        margin: 1 0;
+        align: right middle;
+    }
+
+    .action-bar Button {
+        min-width: 15;
     }
     """
 
@@ -191,7 +202,9 @@ class TrackerApp(App):
     def compose(self) -> ComposeResult:
         yield Label("Tracker App", id="app-title-bar")
         with Horizontal(id="app-container"):
-            with Vertical(id="sidebar"):
+            sidebar = Vertical(id="sidebar")
+            sidebar.border_title = "Navigation"
+            with sidebar:
                 yield ListView(
                     ListItem(Label("SSH Keys", classes="menu-label"), id="menu-ssh", classes="menu-item"),
                     ListItem(Label("GPG Keys", classes="menu-label"), id="menu-gpg", classes="menu-item"),
@@ -199,7 +212,9 @@ class TrackerApp(App):
                     id="menu"
                 )
 
-            with Vertical(id="main-content"):
+            main_content = Vertical(id="main-content")
+            main_content.border_title = "Items"
+            with main_content:
                 with Horizontal(classes="action-bar"):
                     yield Button("Add Entry", id="btn_add", variant="primary")
                 yield DataTable(id="data_table", cursor_type="row", zebra_stripes=False)
