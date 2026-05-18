@@ -480,13 +480,15 @@ class TrackerApp(App):
         self.push_screen(GPGModal(data), check_reply)
 
     def edit_db(self, record, data) -> None:
+        record_name = record.name
         def check_reply(new_data: dict | None) -> None:
             if new_data and new_data["name"]:
                 try:
                     db.connect(reuse_if_open=True)
+                    fresh_record = Database.get(Database.name == record_name)
                     for k, v in new_data.items():
-                        setattr(record, k, v)
-                    record.save()
+                        setattr(fresh_record, k, v)
+                    fresh_record.save()
                     self.load_data()
                 except Exception as e:
                     self.notify(f"Error editing Database: {e}", severity="error")
