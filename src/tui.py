@@ -1,20 +1,24 @@
 from textual.app import App, ComposeResult
-from textual.widgets import Header, Footer, DataTable, Button, Input, Label, ListView, ListItem
+from textual.widgets import Header, Footer, DataTable, Button, Input, Label, ListView, ListItem, TabbedContent, TabPane, Static
 from textual.containers import Horizontal, Vertical
 from textual.screen import ModalScreen
 
 from .models import SSHKey, GPGKey, Database, db
 
 class SSHModal(ModalScreen[dict]):
+    def __init__(self, existing_data: dict | None = None):
+        super().__init__()
+        self.existing_data = existing_data or {}
+
     def compose(self) -> ComposeResult:
         with Vertical(id="dialog"):
-            yield Label("Add SSH Key", id="title")
-            yield Input(placeholder="Name", id="ssh_name")
-            yield Input(placeholder="Host", id="ssh_host")
-            yield Input(placeholder="User", id="ssh_user")
-            yield Input(placeholder="Port (default: 22)", id="ssh_port")
-            yield Input(placeholder="Identity File (optional)", id="ssh_identity")
-            yield Input(placeholder="Description (optional)", id="ssh_desc")
+            yield Label("Edit SSH Key" if self.existing_data else "Add SSH Key", id="title")
+            yield Input(placeholder="Name", id="ssh_name", value=self.existing_data.get("name", ""))
+            yield Input(placeholder="Host", id="ssh_host", value=self.existing_data.get("host", ""))
+            yield Input(placeholder="User", id="ssh_user", value=self.existing_data.get("user", ""))
+            yield Input(placeholder="Port (default: 22)", id="ssh_port", value=str(self.existing_data.get("port", "")))
+            yield Input(placeholder="Identity File (optional)", id="ssh_identity", value=self.existing_data.get("identity_file", ""))
+            yield Input(placeholder="Description (optional)", id="ssh_desc", value=self.existing_data.get("description", ""))
             with Horizontal():
                 yield Button("Save", variant="success", id="save_ssh")
                 yield Button("Cancel", variant="error", id="cancel")
@@ -34,13 +38,17 @@ class SSHModal(ModalScreen[dict]):
             self.dismiss(None)
 
 class GPGModal(ModalScreen[dict]):
+    def __init__(self, existing_data: dict | None = None):
+        super().__init__()
+        self.existing_data = existing_data or {}
+
     def compose(self) -> ComposeResult:
         with Vertical(id="dialog"):
-            yield Label("Add GPG Key", id="title")
-            yield Input(placeholder="Name", id="gpg_name")
-            yield Input(placeholder="Key ID", id="gpg_key_id")
-            yield Input(placeholder="Email", id="gpg_email")
-            yield Input(placeholder="Description (optional)", id="gpg_desc")
+            yield Label("Edit GPG Key" if self.existing_data else "Add GPG Key", id="title")
+            yield Input(placeholder="Name", id="gpg_name", value=self.existing_data.get("name", ""))
+            yield Input(placeholder="Key ID", id="gpg_key_id", value=self.existing_data.get("key_id", ""))
+            yield Input(placeholder="Email", id="gpg_email", value=self.existing_data.get("email", ""))
+            yield Input(placeholder="Description (optional)", id="gpg_desc", value=self.existing_data.get("description", ""))
             with Horizontal():
                 yield Button("Save", variant="success", id="save_gpg")
                 yield Button("Cancel", variant="error", id="cancel")
@@ -58,16 +66,20 @@ class GPGModal(ModalScreen[dict]):
             self.dismiss(None)
 
 class DatabaseModal(ModalScreen[dict]):
+    def __init__(self, existing_data: dict | None = None):
+        super().__init__()
+        self.existing_data = existing_data or {}
+
     def compose(self) -> ComposeResult:
         with Vertical(id="dialog"):
-            yield Label("Add Database", id="title")
-            yield Input(placeholder="Name", id="db_name")
-            yield Input(placeholder="Type (e.g., postgres)", id="db_type")
-            yield Input(placeholder="Host", id="db_host")
-            yield Input(placeholder="Port", id="db_port")
-            yield Input(placeholder="User", id="db_user")
-            yield Input(placeholder="Database Name", id="db_dbname")
-            yield Input(placeholder="Description (optional)", id="db_desc")
+            yield Label("Edit Database" if self.existing_data else "Add Database", id="title")
+            yield Input(placeholder="Name", id="db_name", value=self.existing_data.get("name", ""))
+            yield Input(placeholder="Type (e.g., postgres)", id="db_type", value=self.existing_data.get("type", ""))
+            yield Input(placeholder="Host", id="db_host", value=self.existing_data.get("host", ""))
+            yield Input(placeholder="Port", id="db_port", value=str(self.existing_data.get("port", "")))
+            yield Input(placeholder="User", id="db_user", value=self.existing_data.get("user", ""))
+            yield Input(placeholder="Database Name", id="db_dbname", value=self.existing_data.get("db_name", ""))
+            yield Input(placeholder="Description (optional)", id="db_desc", value=self.existing_data.get("description", ""))
             with Horizontal():
                 yield Button("Save", variant="success", id="save_db")
                 yield Button("Cancel", variant="error", id="cancel")
@@ -86,6 +98,24 @@ class DatabaseModal(ModalScreen[dict]):
             self.dismiss(data)
         elif event.button.id == "cancel":
             self.dismiss(None)
+
+class ConfirmDeleteModal(ModalScreen[bool]):
+    def __init__(self, item_name: str):
+        super().__init__()
+        self.item_name = item_name
+
+    def compose(self) -> ComposeResult:
+        with Vertical(id="dialog"):
+            yield Label(f"Are you sure you want to delete '{self.item_name}'?", id="title")
+            with Horizontal():
+                yield Button("Yes", variant="error", id="btn_yes")
+                yield Button("No", variant="primary", id="btn_no")
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        if event.button.id == "btn_yes":
+            self.dismiss(True)
+        else:
+            self.dismiss(False)
 
 class TrackerApp(App):
     CSS = """
@@ -172,7 +202,7 @@ class TrackerApp(App):
     }
 
     DataTable {
-        height: 1fr;
+        height: 2fr;
         border: none;
         background: transparent;
     }
@@ -190,11 +220,24 @@ class TrackerApp(App):
     .action-bar Button {
         min-width: 15;
     }
+
+    #detail_tabs {
+        height: 1fr;
+        margin-top: 1;
+        border-top: solid $primary;
+    }
+
+    #detail_view {
+        padding: 1 2;
+        height: 100%;
+    }
     """
 
     BINDINGS = [
         ("q", "quit", "Quit"),
         ("a", "add_entry", "Add Entry"),
+        ("e", "edit_entry", "Edit Entry"),
+        ("d", "delete_entry", "Delete Entry"),
     ]
 
     theme = "tokyo-night"
@@ -216,8 +259,13 @@ class TrackerApp(App):
             main_content.border_title = "Items"
             with main_content:
                 with Horizontal(classes="action-bar"):
-                    yield Button("Add Entry", id="btn_add", variant="primary")
+                    yield Button("Add", id="btn_add", variant="primary")
+                    yield Button("Edit", id="btn_edit", variant="warning")
+                    yield Button("Delete", id="btn_delete", variant="error")
                 yield DataTable(id="data_table", cursor_type="row", zebra_stripes=False)
+                with TabbedContent(id="detail_tabs"):
+                    with TabPane("Details", id="tab_details"):
+                        yield Static("Select an item to view details", id="detail_view")
 
         yield Footer()
 
@@ -249,6 +297,64 @@ class TrackerApp(App):
 
         self.load_data()
 
+    def on_data_table_row_selected(self, event: DataTable.RowSelected) -> None:
+        table = self.query_one(DataTable)
+        try:
+            row_key = event.row_key
+            row_data = table.get_row(row_key)
+            name = row_data[0]
+
+            detail_view = self.query_one("#detail_view", Static)
+            db.connect(reuse_if_open=True)
+            try:
+                if self.current_view == "menu-ssh":
+                    record = SSHKey.get(SSHKey.name == name)
+                    detail_text = f"[b]Name:[/b] {record.name}\n[b]Host:[/b] {record.host}\n[b]User:[/b] {record.user}\n[b]Port:[/b] {record.port}\n[b]Identity File:[/b] {record.identity_file or 'None'}\n[b]Description:[/b] {record.description or 'None'}"
+                elif self.current_view == "menu-gpg":
+                    record = GPGKey.get(GPGKey.name == name)
+                    detail_text = f"[b]Name:[/b] {record.name}\n[b]Key ID:[/b] {record.key_id}\n[b]Email:[/b] {record.email}\n[b]Description:[/b] {record.description or 'None'}"
+                elif self.current_view == "menu-db":
+                    record = Database.get(Database.name == name)
+                    detail_text = f"[b]Name:[/b] {record.name}\n[b]Type:[/b] {record.type}\n[b]Host:[/b] {record.host}\n[b]Port:[/b] {record.port}\n[b]User:[/b] {record.user}\n[b]Database Name:[/b] {record.db_name}\n[b]Description:[/b] {record.description or 'None'}"
+
+                detail_view.update(detail_text)
+            except Exception as e:
+                self.notify(f"Error fetching record details: {e}", severity="error")
+            finally:
+                if not db.is_closed():
+                    db.close()
+        except Exception:
+            pass
+
+    def on_data_table_row_highlighted(self, event: DataTable.RowHighlighted) -> None:
+        table = self.query_one(DataTable)
+        try:
+            row_key = event.row_key
+            row_data = table.get_row(row_key)
+            name = row_data[0]
+
+            detail_view = self.query_one("#detail_view", Static)
+            db.connect(reuse_if_open=True)
+            try:
+                if self.current_view == "menu-ssh":
+                    record = SSHKey.get(SSHKey.name == name)
+                    detail_text = f"[b]Name:[/b] {record.name}\n[b]Host:[/b] {record.host}\n[b]User:[/b] {record.user}\n[b]Port:[/b] {record.port}\n[b]Identity File:[/b] {record.identity_file or 'None'}\n[b]Description:[/b] {record.description or 'None'}"
+                elif self.current_view == "menu-gpg":
+                    record = GPGKey.get(GPGKey.name == name)
+                    detail_text = f"[b]Name:[/b] {record.name}\n[b]Key ID:[/b] {record.key_id}\n[b]Email:[/b] {record.email}\n[b]Description:[/b] {record.description or 'None'}"
+                elif self.current_view == "menu-db":
+                    record = Database.get(Database.name == name)
+                    detail_text = f"[b]Name:[/b] {record.name}\n[b]Type:[/b] {record.type}\n[b]Host:[/b] {record.host}\n[b]Port:[/b] {record.port}\n[b]User:[/b] {record.user}\n[b]Database Name:[/b] {record.db_name}\n[b]Description:[/b] {record.description or 'None'}"
+
+                detail_view.update(detail_text)
+            except Exception as e:
+                pass
+            finally:
+                if not db.is_closed():
+                    db.close()
+        except Exception:
+            pass
+
     def load_data(self) -> None:
         table = self.query_one(DataTable)
         table.clear()
@@ -267,12 +373,129 @@ class TrackerApp(App):
         if not db.is_closed():
             db.close()
 
+    def action_edit_entry(self) -> None:
+        self.edit_entry()
+
+    def action_delete_entry(self) -> None:
+        table = self.query_one(DataTable)
+        try:
+            row_key = table.coordinate_to_cell_key(table.cursor_coordinate).row_key
+            row_data = table.get_row(row_key)
+            name = row_data[0] # The name is the first column
+        except Exception:
+            self.notify("Please select an item to delete.", severity="warning")
+            return
+
+        def check_reply(confirm: bool) -> None:
+            if confirm:
+                db.connect(reuse_if_open=True)
+                try:
+                    if self.current_view == "menu-ssh":
+                        SSHKey.get(SSHKey.name == name).delete_instance()
+                    elif self.current_view == "menu-gpg":
+                        GPGKey.get(GPGKey.name == name).delete_instance()
+                    elif self.current_view == "menu-db":
+                        Database.get(Database.name == name).delete_instance()
+                    self.load_data()
+                    self.notify(f"Deleted '{name}'.")
+                except Exception as e:
+                    self.notify(f"Error deleting record: {e}", severity="error")
+                finally:
+                    if not db.is_closed():
+                        db.close()
+
+        self.push_screen(ConfirmDeleteModal(name), check_reply)
+
     def action_add_entry(self) -> None:
         self.add_entry()
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         if event.button.id == "btn_add":
             self.add_entry()
+        elif event.button.id == "btn_edit":
+            self.edit_entry()
+        elif event.button.id == "btn_delete":
+            self.action_delete_entry()
+
+    def edit_entry(self) -> None:
+        table = self.query_one(DataTable)
+        try:
+            row_key = table.coordinate_to_cell_key(table.cursor_coordinate).row_key
+            row_data = table.get_row(row_key)
+            name = row_data[0] # The name is the first column
+        except Exception:
+            self.notify("Please select an item to edit.", severity="warning")
+            return
+
+        db.connect(reuse_if_open=True)
+        try:
+            if self.current_view == "menu-ssh":
+                record = SSHKey.get(SSHKey.name == name)
+                data = {"name": record.name, "host": record.host, "user": record.user, "port": record.port, "identity_file": record.identity_file, "description": record.description}
+                self.edit_ssh(record, data)
+            elif self.current_view == "menu-gpg":
+                record = GPGKey.get(GPGKey.name == name)
+                data = {"name": record.name, "key_id": record.key_id, "email": record.email, "description": record.description}
+                self.edit_gpg(record, data)
+            elif self.current_view == "menu-db":
+                record = Database.get(Database.name == name)
+                data = {"name": record.name, "type": record.type, "host": record.host, "port": record.port, "user": record.user, "db_name": record.db_name, "description": record.description}
+                self.edit_db(record, data)
+        except Exception as e:
+            self.notify(f"Error fetching record: {e}", severity="error")
+        finally:
+            if not db.is_closed():
+                db.close()
+
+    def edit_ssh(self, record, data) -> None:
+        def check_reply(new_data: dict | None) -> None:
+            if new_data and new_data["name"]:
+                try:
+                    db.connect(reuse_if_open=True)
+                    for k, v in new_data.items():
+                        setattr(record, k, v)
+                    record.save()
+                    self.load_data()
+                except Exception as e:
+                    self.notify(f"Error editing SSH Key: {e}", severity="error")
+                finally:
+                    if not db.is_closed():
+                        db.close()
+        self.push_screen(SSHModal(data), check_reply)
+
+    def edit_gpg(self, record, data) -> None:
+        def check_reply(new_data: dict | None) -> None:
+            if new_data and new_data["name"]:
+                try:
+                    db.connect(reuse_if_open=True)
+                    for k, v in new_data.items():
+                        setattr(record, k, v)
+                    record.save()
+                    self.load_data()
+                except Exception as e:
+                    self.notify(f"Error editing GPG Key: {e}", severity="error")
+                finally:
+                    if not db.is_closed():
+                        db.close()
+        self.push_screen(GPGModal(data), check_reply)
+
+    def edit_db(self, record, data) -> None:
+        record_name = record.name
+        def check_reply(new_data: dict | None) -> None:
+            if new_data and new_data["name"]:
+                try:
+                    db.connect(reuse_if_open=True)
+                    fresh_record = Database.get(Database.name == record_name)
+                    for k, v in new_data.items():
+                        setattr(fresh_record, k, v)
+                    fresh_record.save()
+                    self.load_data()
+                except Exception as e:
+                    self.notify(f"Error editing Database: {e}", severity="error")
+                finally:
+                    if not db.is_closed():
+                        db.close()
+        self.push_screen(DatabaseModal(data), check_reply)
 
     def add_entry(self) -> None:
         if self.current_view == "menu-ssh":
