@@ -138,7 +138,7 @@ class TrackerApp(App):
         background: $surface;
         border: round $primary;
         border-title-color: $text;
-        padding: 1 0;
+        padding: 1;
     }
 
     #sidebar > ListView {
