@@ -1,5 +1,5 @@
 from textual.app import App, ComposeResult
-from textual.widgets import Header, Footer, DataTable, Button, Input, Label, ListView, ListItem, TabbedContent, TabPane, Static
+from textual.widgets import Header, Footer, DataTable, Button, Input, Label, ListView, ListItem, TabbedContent, TabPane
 from textual.containers import Horizontal, Vertical
 from textual.screen import ModalScreen
 
@@ -262,7 +262,7 @@ class TrackerApp(App):
                 yield DataTable(id="data_table", cursor_type="row", zebra_stripes=False)
                 with TabbedContent(id="detail_tabs"):
                     with TabPane("Details", id="tab_details"):
-                        yield Static("Select an item to view details", id="detail_view")
+                        yield Label("Select an item to view details", id="detail_view")
 
         yield Footer()
 
@@ -301,7 +301,7 @@ class TrackerApp(App):
             row_data = table.get_row(row_key)
             name = row_data[0]
 
-            detail_view = self.query_one("#detail_view", Static)
+            detail_view = self.query_one("#detail_view", Label)
             db.connect(reuse_if_open=True)
             try:
                 if self.current_view == "menu-ssh":
@@ -330,7 +330,7 @@ class TrackerApp(App):
             row_data = table.get_row(row_key)
             name = row_data[0]
 
-            detail_view = self.query_one("#detail_view", Static)
+            detail_view = self.query_one("#detail_view", Label)
             db.connect(reuse_if_open=True)
             try:
                 if self.current_view == "menu-ssh":
