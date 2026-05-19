@@ -444,55 +444,33 @@ class TrackerApp(App):
             if not db.is_closed():
                 db.close()
 
-    def edit_ssh(self, record, data) -> None:
-        def check_reply(new_data: dict | None) -> None:
-            if new_data and new_data["name"]:
-                try:
-                    db.connect(reuse_if_open=True)
-                    for k, v in new_data.items():
-                        setattr(record, k, v)
-                    record.save()
-                    self.load_data()
-                except Exception as e:
-                    self.notify(f"Error editing SSH Key: {e}", severity="error")
-                finally:
-                    if not db.is_closed():
-                        db.close()
-        self.push_screen(SSHModal(data), check_reply)
-
-    def edit_gpg(self, record, data) -> None:
-        def check_reply(new_data: dict | None) -> None:
-            if new_data and new_data["name"]:
-                try:
-                    db.connect(reuse_if_open=True)
-                    for k, v in new_data.items():
-                        setattr(record, k, v)
-                    record.save()
-                    self.load_data()
-                except Exception as e:
-                    self.notify(f"Error editing GPG Key: {e}", severity="error")
-                finally:
-                    if not db.is_closed():
-                        db.close()
-        self.push_screen(GPGModal(data), check_reply)
-
-    def edit_db(self, record, data) -> None:
+    def _edit_entry_in_db(self, record, data, modal_cls, error_label: str) -> None:
         record_name = record.name
+        model_cls = type(record)
         def check_reply(new_data: dict | None) -> None:
             if new_data and new_data["name"]:
                 try:
                     db.connect(reuse_if_open=True)
-                    fresh_record = Database.get(Database.name == record_name)
+                    fresh_record = model_cls.get(model_cls.name == record_name)
                     for k, v in new_data.items():
                         setattr(fresh_record, k, v)
                     fresh_record.save()
                     self.load_data()
                 except Exception as e:
-                    self.notify(f"Error editing Database: {e}", severity="error")
+                    self.notify(f"Error editing {error_label}: {e}", severity="error")
                 finally:
                     if not db.is_closed():
                         db.close()
-        self.push_screen(DatabaseModal(data), check_reply)
+        self.push_screen(modal_cls(data), check_reply)
+
+    def edit_ssh(self, record, data) -> None:
+        self._edit_entry_in_db(record, data, SSHModal, "SSH Key")
+
+    def edit_gpg(self, record, data) -> None:
+        self._edit_entry_in_db(record, data, GPGModal, "GPG Key")
+
+    def edit_db(self, record, data) -> None:
+        self._edit_entry_in_db(record, data, DatabaseModal, "Database")
 
     def add_entry(self) -> None:
         if self.current_view == "menu-ssh":
@@ -502,47 +480,28 @@ class TrackerApp(App):
         elif self.current_view == "menu-db":
             self.add_db()
 
-    def add_ssh(self) -> None:
+    def _add_entry_to_db(self, model_cls, modal_cls, error_label: str) -> None:
         def check_reply(data: dict | None) -> None:
             if data and data["name"]:
                 try:
                     db.connect(reuse_if_open=True)
-                    SSHKey.create(**data)
+                    model_cls.create(**data)
                     self.load_data()
                 except Exception as e:
-                    self.notify(f"Error adding SSH Key: {e}", severity="error")
+                    self.notify(f"Error adding {error_label}: {e}", severity="error")
                 finally:
                     if not db.is_closed():
                         db.close()
-        self.push_screen(SSHModal(), check_reply)
+        self.push_screen(modal_cls(), check_reply)
+
+    def add_ssh(self) -> None:
+        self._add_entry_to_db(SSHKey, SSHModal, "SSH Key")
 
     def add_gpg(self) -> None:
-        def check_reply(data: dict | None) -> None:
-            if data and data["name"]:
-                try:
-                    db.connect(reuse_if_open=True)
-                    GPGKey.create(**data)
-                    self.load_data()
-                except Exception as e:
-                    self.notify(f"Error adding GPG Key: {e}", severity="error")
-                finally:
-                    if not db.is_closed():
-                        db.close()
-        self.push_screen(GPGModal(), check_reply)
+        self._add_entry_to_db(GPGKey, GPGModal, "GPG Key")
 
     def add_db(self) -> None:
-        def check_reply(data: dict | None) -> None:
-            if data and data["name"]:
-                try:
-                    db.connect(reuse_if_open=True)
-                    Database.create(**data)
-                    self.load_data()
-                except Exception as e:
-                    self.notify(f"Error adding Database: {e}", severity="error")
-                finally:
-                    if not db.is_closed():
-                        db.close()
-        self.push_screen(DatabaseModal(), check_reply)
+        self._add_entry_to_db(Database, DatabaseModal, "Database")
 
 if __name__ == "__main__":
     app = TrackerApp()
