@@ -119,31 +119,26 @@ class ConfirmDeleteModal(ModalScreen[bool]):
 
 class TrackerApp(App):
     CSS = """
+    Screen {
+        background: $surface-darken-1;
+    }
+
     #app-container {
         layout: horizontal;
         height: 100%;
         width: 100%;
-        margin: 0 1;
-    }
-
-    #app-title-bar {
-        height: 3;
-        padding: 1 2;
-        background: $panel;
-        color: $text;
-        text-style: bold;
-        border-bottom: solid $background;
-        margin-bottom: 1;
+        padding: 1;
+        margin: 0;
     }
 
     #sidebar {
         width: 30;
         height: 100%;
         dock: left;
-        background: $panel-darken-1;
+        background: $surface;
         border: round $primary;
         border-title-color: $text;
-        padding: 0 1;
+        padding: 1;
     }
 
     #sidebar > ListView {
@@ -171,7 +166,7 @@ class TrackerApp(App):
         background: $surface;
         border: round $primary;
         border-title-color: $text;
-        padding: 0 1;
+        padding: 1;
         margin-left: 1;
     }
 
@@ -212,8 +207,8 @@ class TrackerApp(App):
     }
 
     .action-bar {
-        height: 3;
-        margin: 1 0;
+        height: auto;
+        margin: 0 0 1 0;
         align: right middle;
     }
 
@@ -224,7 +219,8 @@ class TrackerApp(App):
     #detail_tabs {
         height: 1fr;
         margin-top: 1;
-        border-top: solid $primary;
+        border: round $primary;
+        background: $surface-lighten-1;
     }
 
     #detail_view {
@@ -241,17 +237,18 @@ class TrackerApp(App):
     ]
 
     theme = "tokyo-night"
+    TITLE = "Tracker App"
 
     def compose(self) -> ComposeResult:
-        yield Label("Tracker App", id="app-title-bar")
+        yield Header(show_clock=True)
         with Horizontal(id="app-container"):
             sidebar = Vertical(id="sidebar")
             sidebar.border_title = "Navigation"
             with sidebar:
                 yield ListView(
-                    ListItem(Label("SSH Keys", classes="menu-label"), id="menu-ssh", classes="menu-item"),
-                    ListItem(Label("GPG Keys", classes="menu-label"), id="menu-gpg", classes="menu-item"),
-                    ListItem(Label("Databases", classes="menu-label"), id="menu-db", classes="menu-item"),
+                    ListItem(Label("🔑 SSH Keys", classes="menu-label"), id="menu-ssh", classes="menu-item"),
+                    ListItem(Label("🔐 GPG Keys", classes="menu-label"), id="menu-gpg", classes="menu-item"),
+                    ListItem(Label("🗄️ Databases", classes="menu-label"), id="menu-db", classes="menu-item"),
                     id="menu"
                 )
 
@@ -309,13 +306,13 @@ class TrackerApp(App):
             try:
                 if self.current_view == "menu-ssh":
                     record = SSHKey.get(SSHKey.name == name)
-                    detail_text = f"[b]Name:[/b] {record.name}\n[b]Host:[/b] {record.host}\n[b]User:[/b] {record.user}\n[b]Port:[/b] {record.port}\n[b]Identity File:[/b] {record.identity_file or 'None'}\n[b]Description:[/b] {record.description or 'None'}"
+                    detail_text = f"[b][#44bbaa]Name:[/#44bbaa][/b] {record.name}\n[b][#44bbaa]Host:[/#44bbaa][/b] {record.host}\n[b][#44bbaa]User:[/#44bbaa][/b] {record.user}\n[b][#44bbaa]Port:[/#44bbaa][/b] {record.port}\n[b][#44bbaa]Identity File:[/#44bbaa][/b] {record.identity_file or 'None'}\n[b][#44bbaa]Description:[/#44bbaa][/b] {record.description or 'None'}"
                 elif self.current_view == "menu-gpg":
                     record = GPGKey.get(GPGKey.name == name)
-                    detail_text = f"[b]Name:[/b] {record.name}\n[b]Key ID:[/b] {record.key_id}\n[b]Email:[/b] {record.email}\n[b]Description:[/b] {record.description or 'None'}"
+                    detail_text = f"[b][#44bbaa]Name:[/#44bbaa][/b] {record.name}\n[b][#44bbaa]Key ID:[/#44bbaa][/b] {record.key_id}\n[b][#44bbaa]Email:[/#44bbaa][/b] {record.email}\n[b][#44bbaa]Description:[/#44bbaa][/b] {record.description or 'None'}"
                 elif self.current_view == "menu-db":
                     record = Database.get(Database.name == name)
-                    detail_text = f"[b]Name:[/b] {record.name}\n[b]Type:[/b] {record.type}\n[b]Host:[/b] {record.host}\n[b]Port:[/b] {record.port}\n[b]User:[/b] {record.user}\n[b]Database Name:[/b] {record.db_name}\n[b]Description:[/b] {record.description or 'None'}"
+                    detail_text = f"[b][#44bbaa]Name:[/#44bbaa][/b] {record.name}\n[b][#44bbaa]Type:[/#44bbaa][/b] {record.type}\n[b][#44bbaa]Host:[/#44bbaa][/b] {record.host}\n[b][#44bbaa]Port:[/#44bbaa][/b] {record.port}\n[b][#44bbaa]User:[/#44bbaa][/b] {record.user}\n[b][#44bbaa]Database Name:[/#44bbaa][/b] {record.db_name}\n[b][#44bbaa]Description:[/#44bbaa][/b] {record.description or 'None'}"
 
                 detail_view.update(detail_text)
             except Exception as e:
@@ -338,13 +335,13 @@ class TrackerApp(App):
             try:
                 if self.current_view == "menu-ssh":
                     record = SSHKey.get(SSHKey.name == name)
-                    detail_text = f"[b]Name:[/b] {record.name}\n[b]Host:[/b] {record.host}\n[b]User:[/b] {record.user}\n[b]Port:[/b] {record.port}\n[b]Identity File:[/b] {record.identity_file or 'None'}\n[b]Description:[/b] {record.description or 'None'}"
+                    detail_text = f"[b][#44bbaa]Name:[/#44bbaa][/b] {record.name}\n[b][#44bbaa]Host:[/#44bbaa][/b] {record.host}\n[b][#44bbaa]User:[/#44bbaa][/b] {record.user}\n[b][#44bbaa]Port:[/#44bbaa][/b] {record.port}\n[b][#44bbaa]Identity File:[/#44bbaa][/b] {record.identity_file or 'None'}\n[b][#44bbaa]Description:[/#44bbaa][/b] {record.description or 'None'}"
                 elif self.current_view == "menu-gpg":
                     record = GPGKey.get(GPGKey.name == name)
-                    detail_text = f"[b]Name:[/b] {record.name}\n[b]Key ID:[/b] {record.key_id}\n[b]Email:[/b] {record.email}\n[b]Description:[/b] {record.description or 'None'}"
+                    detail_text = f"[b][#44bbaa]Name:[/#44bbaa][/b] {record.name}\n[b][#44bbaa]Key ID:[/#44bbaa][/b] {record.key_id}\n[b][#44bbaa]Email:[/#44bbaa][/b] {record.email}\n[b][#44bbaa]Description:[/#44bbaa][/b] {record.description or 'None'}"
                 elif self.current_view == "menu-db":
                     record = Database.get(Database.name == name)
-                    detail_text = f"[b]Name:[/b] {record.name}\n[b]Type:[/b] {record.type}\n[b]Host:[/b] {record.host}\n[b]Port:[/b] {record.port}\n[b]User:[/b] {record.user}\n[b]Database Name:[/b] {record.db_name}\n[b]Description:[/b] {record.description or 'None'}"
+                    detail_text = f"[b][#44bbaa]Name:[/#44bbaa][/b] {record.name}\n[b][#44bbaa]Type:[/#44bbaa][/b] {record.type}\n[b][#44bbaa]Host:[/#44bbaa][/b] {record.host}\n[b][#44bbaa]Port:[/#44bbaa][/b] {record.port}\n[b][#44bbaa]User:[/#44bbaa][/b] {record.user}\n[b][#44bbaa]Database Name:[/#44bbaa][/b] {record.db_name}\n[b][#44bbaa]Description:[/#44bbaa][/b] {record.description or 'None'}"
 
                 detail_view.update(detail_text)
             except Exception as e:
