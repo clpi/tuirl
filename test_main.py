@@ -1,4 +1,3 @@
-import sys
 from unittest.mock import patch
 from src.models import init_db
 from src.tui import TrackerApp
