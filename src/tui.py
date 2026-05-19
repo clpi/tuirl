@@ -358,14 +358,14 @@ class TrackerApp(App):
         db.connect(reuse_if_open=True)
 
         if self.current_view == "menu-ssh":
-            for ssh in SSHKey.select():
-                table.add_row(ssh.name, ssh.host, ssh.user, str(ssh.port), ssh.identity_file or "", ssh.description or "")
+            for ssh in SSHKey.select(SSHKey.name, SSHKey.host, SSHKey.user, SSHKey.port, SSHKey.identity_file, SSHKey.description).tuples():
+                table.add_row(ssh[0], ssh[1], ssh[2], str(ssh[3]), ssh[4] or "", ssh[5] or "")
         elif self.current_view == "menu-gpg":
-            for gpg in GPGKey.select():
-                table.add_row(gpg.name, gpg.key_id, gpg.email, gpg.description or "")
+            for gpg in GPGKey.select(GPGKey.name, GPGKey.key_id, GPGKey.email, GPGKey.description).tuples():
+                table.add_row(gpg[0], gpg[1], gpg[2], gpg[3] or "")
         elif self.current_view == "menu-db":
-            for database in Database.select():
-                table.add_row(database.name, database.type, database.host, str(database.port), database.user, database.db_name, database.description or "")
+            for db_record in Database.select(Database.name, Database.type, Database.host, Database.port, Database.user, Database.db_name, Database.description).tuples():
+                table.add_row(db_record[0], db_record[1], db_record[2], str(db_record[3]), db_record[4], db_record[5], db_record[6] or "")
 
         if not db.is_closed():
             db.close()
