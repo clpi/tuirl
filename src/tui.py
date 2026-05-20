@@ -364,8 +364,8 @@ class TrackerApp(App):
             for name, key_id, email, desc in GPGKey.select(GPGKey.name, GPGKey.key_id, GPGKey.email, GPGKey.description).tuples():
                 table.add_row(name, key_id, email, desc or "")
         elif self.current_view == "menu-db":
-            for db_record in Database.select(Database.name, Database.type, Database.host, Database.port, Database.user, Database.db_name, Database.description).tuples():
-                table.add_row(db_record[0], db_record[1], db_record[2], str(db_record[3]), db_record[4], db_record[5], db_record[6] or "")
+            for name, type_, host, port, user, db_name, desc in Database.select(Database.name, Database.type, Database.host, Database.port, Database.user, Database.db_name, Database.description).tuples():
+                table.add_row(name, type_, host, str(port), user, db_name, desc or "")
 
         if not db.is_closed():
             db.close()
