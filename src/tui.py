@@ -361,8 +361,8 @@ class TrackerApp(App):
             for name, host, user, port, identity, desc in SSHKey.select(SSHKey.name, SSHKey.host, SSHKey.user, SSHKey.port, SSHKey.identity_file, SSHKey.description).tuples():
                 table.add_row(name, host, user, str(port), identity or "", desc or "")
         elif self.current_view == "menu-gpg":
-            for gpg in GPGKey.select(GPGKey.name, GPGKey.key_id, GPGKey.email, GPGKey.description).tuples():
-                table.add_row(gpg[0], gpg[1], gpg[2], gpg[3] or "")
+            for name, key_id, email, desc in GPGKey.select(GPGKey.name, GPGKey.key_id, GPGKey.email, GPGKey.description).tuples():
+                table.add_row(name, key_id, email, desc or "")
         elif self.current_view == "menu-db":
             for db_record in Database.select(Database.name, Database.type, Database.host, Database.port, Database.user, Database.db_name, Database.description).tuples():
                 table.add_row(db_record[0], db_record[1], db_record[2], str(db_record[3]), db_record[4], db_record[5], db_record[6] or "")
