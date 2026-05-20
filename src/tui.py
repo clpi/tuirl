@@ -358,8 +358,8 @@ class TrackerApp(App):
         db.connect(reuse_if_open=True)
 
         if self.current_view == "menu-ssh":
-            for ssh in SSHKey.select(SSHKey.name, SSHKey.host, SSHKey.user, SSHKey.port, SSHKey.identity_file, SSHKey.description).tuples():
-                table.add_row(ssh[0], ssh[1], ssh[2], str(ssh[3]), ssh[4] or "", ssh[5] or "")
+            for name, host, user, port, identity, desc in SSHKey.select(SSHKey.name, SSHKey.host, SSHKey.user, SSHKey.port, SSHKey.identity_file, SSHKey.description).tuples():
+                table.add_row(name, host, user, str(port), identity or "", desc or "")
         elif self.current_view == "menu-gpg":
             for gpg in GPGKey.select(GPGKey.name, GPGKey.key_id, GPGKey.email, GPGKey.description).tuples():
                 table.add_row(gpg[0], gpg[1], gpg[2], gpg[3] or "")
