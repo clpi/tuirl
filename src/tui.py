@@ -264,7 +264,6 @@ class TrackerApp(App):
 
     def on_mount(self) -> None:
         self.current_view = "menu-ssh"
-        table = self.query_one(DataTable)
         self.setup_table(self.current_view)
 
         # Select first item
@@ -278,7 +277,7 @@ class TrackerApp(App):
             self.setup_table(item_id)
 
     def setup_table(self, view_id: str) -> None:
-        table = self.query_one(DataTable)
+        table = self.query_one("#data_table", DataTable)
         table.clear(columns=True)
 
         if view_id == "menu-ssh":
@@ -291,7 +290,7 @@ class TrackerApp(App):
         self.load_data()
 
     def on_data_table_row_selected(self, event: DataTable.RowSelected) -> None:
-        table = self.query_one(DataTable)
+        table = self.query_one("#data_table", DataTable)
         try:
             row_key = event.row_key
             row_data = table.get_row(row_key)
@@ -320,7 +319,7 @@ class TrackerApp(App):
             pass
 
     def on_data_table_row_highlighted(self, event: DataTable.RowHighlighted) -> None:
-        table = self.query_one(DataTable)
+        table = self.query_one("#data_table", DataTable)
         try:
             row_key = event.row_key
             row_data = table.get_row(row_key)
@@ -349,7 +348,7 @@ class TrackerApp(App):
             pass
 
     def load_data(self) -> None:
-        table = self.query_one(DataTable)
+        table = self.query_one("#data_table", DataTable)
         table.clear()
         db.connect(reuse_if_open=True)
 
@@ -370,7 +369,7 @@ class TrackerApp(App):
         self.edit_entry()
 
     def action_delete_entry(self) -> None:
-        table = self.query_one(DataTable)
+        table = self.query_one("#data_table", DataTable)
         try:
             row_key = table.coordinate_to_cell_key(table.cursor_coordinate).row_key
             row_data = table.get_row(row_key)
@@ -411,7 +410,7 @@ class TrackerApp(App):
             self.action_delete_entry()
 
     def edit_entry(self) -> None:
-        table = self.query_one(DataTable)
+        table = self.query_one("#data_table", DataTable)
         try:
             row_key = table.coordinate_to_cell_key(table.cursor_coordinate).row_key
             row_data = table.get_row(row_key)
@@ -503,8 +502,13 @@ class TrackerApp(App):
             if data and data["name"]:
                 try:
                     db.connect(reuse_if_open=True)
-                    SSHKey.create(**data)
-                    self.load_data()
+                    ssh = SSHKey.create(**data)
+                except Exception as e:
+                    self.notify(f"Error adding SSH Key: {e}", severity="error")
+                    return
+                try:
+                    table = self.query_one("#data_table", DataTable)
+                    table.add_row(ssh.name, ssh.host, ssh.user, str(ssh.port), ssh.identity_file or "", ssh.description or "", key=str(ssh.id))
                 except Exception as e:
                     self.notify(f"Error adding SSH Key: {e}", severity="error")
                 finally:
@@ -517,8 +521,13 @@ class TrackerApp(App):
             if data and data["name"]:
                 try:
                     db.connect(reuse_if_open=True)
-                    GPGKey.create(**data)
-                    self.load_data()
+                    gpg = GPGKey.create(**data)
+                except Exception as e:
+                    self.notify(f"Error adding GPG Key: {e}", severity="error")
+                    return
+                try:
+                    table = self.query_one("#data_table", DataTable)
+                    table.add_row(gpg.name, gpg.key_id, gpg.email, gpg.description or "", key=str(gpg.id))
                 except Exception as e:
                     self.notify(f"Error adding GPG Key: {e}", severity="error")
                 finally:
@@ -531,8 +540,13 @@ class TrackerApp(App):
             if data and data["name"]:
                 try:
                     db.connect(reuse_if_open=True)
-                    Database.create(**data)
-                    self.load_data()
+                    database = Database.create(**data)
+                except Exception as e:
+                    self.notify(f"Error adding Database: {e}", severity="error")
+                    return
+                try:
+                    table = self.query_one("#data_table", DataTable)
+                    table.add_row(database.name, database.type, database.host, str(database.port), database.user, database.db_name, database.description or "", key=str(database.id))
                 except Exception as e:
                     self.notify(f"Error adding Database: {e}", severity="error")
                 finally:
