@@ -268,7 +268,6 @@ class TrackerApp(App):
 
     def on_mount(self) -> None:
         self.current_view = "menu-ssh"
-        table = self.query_one("#data_table", DataTable)
         self.setup_table(self.current_view)
 
         # Select first item
