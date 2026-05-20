@@ -5,99 +5,95 @@ from textual.screen import ModalScreen
 
 from .models import SSHKey, GPGKey, Database, db
 
-class SSHModal(ModalScreen[dict]):
-    def __init__(self, existing_data: dict | None = None):
+class BaseFormModal(ModalScreen[dict]):
+    def __init__(self, title_template: str, existing_data: dict | None = None):
         super().__init__()
+        self.title_template = title_template
         self.existing_data = existing_data or {}
 
     def compose(self) -> ComposeResult:
         with Vertical(id="dialog"):
-            yield Label("Edit SSH Key" if self.existing_data else "Add SSH Key", id="title")
-            yield Input(placeholder="Name", id="ssh_name", value=self.existing_data.get("name", ""))
-            yield Input(placeholder="Host", id="ssh_host", value=self.existing_data.get("host", ""))
-            yield Input(placeholder="User", id="ssh_user", value=self.existing_data.get("user", ""))
-            yield Input(placeholder="Port (default: 22)", id="ssh_port", value=str(self.existing_data.get("port", "")))
-            yield Input(placeholder="Identity File (optional)", id="ssh_identity", value=self.existing_data.get("identity_file", ""))
-            yield Input(placeholder="Description (optional)", id="ssh_desc", value=self.existing_data.get("description", ""))
+            yield Label(self.title_template.format("Edit" if self.existing_data else "Add"), id="title")
+            yield from self.compose_inputs()
             with Horizontal():
-                yield Button("Save", variant="success", id="save_ssh")
+                yield Button("Save", variant="success", id="save")
                 yield Button("Cancel", variant="error", id="cancel")
 
+    def compose_inputs(self) -> ComposeResult:
+        yield from []
+
     def on_button_pressed(self, event: Button.Pressed) -> None:
-        if event.button.id == "save_ssh":
-            data = {
-                "name": self.query_one("#ssh_name").value,
-                "host": self.query_one("#ssh_host").value,
-                "user": self.query_one("#ssh_user").value,
-                "port": self.query_one("#ssh_port").value or 22,
-                "identity_file": self.query_one("#ssh_identity").value,
-                "description": self.query_one("#ssh_desc").value,
-            }
-            self.dismiss(data)
+        if event.button.id == "save":
+            self.dismiss(self.get_form_data())
         elif event.button.id == "cancel":
             self.dismiss(None)
 
-class GPGModal(ModalScreen[dict]):
+    def get_form_data(self) -> dict:
+        return {}
+
+class SSHModal(BaseFormModal):
     def __init__(self, existing_data: dict | None = None):
-        super().__init__()
-        self.existing_data = existing_data or {}
+        super().__init__("{} SSH Key", existing_data)
 
-    def compose(self) -> ComposeResult:
-        with Vertical(id="dialog"):
-            yield Label("Edit GPG Key" if self.existing_data else "Add GPG Key", id="title")
-            yield Input(placeholder="Name", id="gpg_name", value=self.existing_data.get("name", ""))
-            yield Input(placeholder="Key ID", id="gpg_key_id", value=self.existing_data.get("key_id", ""))
-            yield Input(placeholder="Email", id="gpg_email", value=self.existing_data.get("email", ""))
-            yield Input(placeholder="Description (optional)", id="gpg_desc", value=self.existing_data.get("description", ""))
-            with Horizontal():
-                yield Button("Save", variant="success", id="save_gpg")
-                yield Button("Cancel", variant="error", id="cancel")
+    def compose_inputs(self) -> ComposeResult:
+        yield Input(placeholder="Name", id="ssh_name", value=self.existing_data.get("name", ""))
+        yield Input(placeholder="Host", id="ssh_host", value=self.existing_data.get("host", ""))
+        yield Input(placeholder="User", id="ssh_user", value=self.existing_data.get("user", ""))
+        yield Input(placeholder="Port (default: 22)", id="ssh_port", value=str(self.existing_data.get("port", "")))
+        yield Input(placeholder="Identity File (optional)", id="ssh_identity", value=self.existing_data.get("identity_file", ""))
+        yield Input(placeholder="Description (optional)", id="ssh_desc", value=self.existing_data.get("description", ""))
 
-    def on_button_pressed(self, event: Button.Pressed) -> None:
-        if event.button.id == "save_gpg":
-            data = {
-                "name": self.query_one("#gpg_name").value,
-                "key_id": self.query_one("#gpg_key_id").value,
-                "email": self.query_one("#gpg_email").value,
-                "description": self.query_one("#gpg_desc").value,
-            }
-            self.dismiss(data)
-        elif event.button.id == "cancel":
-            self.dismiss(None)
+    def get_form_data(self) -> dict:
+        return {
+            "name": self.query_one("#ssh_name").value,
+            "host": self.query_one("#ssh_host").value,
+            "user": self.query_one("#ssh_user").value,
+            "port": self.query_one("#ssh_port").value or 22,
+            "identity_file": self.query_one("#ssh_identity").value,
+            "description": self.query_one("#ssh_desc").value,
+        }
 
-class DatabaseModal(ModalScreen[dict]):
+class GPGModal(BaseFormModal):
     def __init__(self, existing_data: dict | None = None):
-        super().__init__()
-        self.existing_data = existing_data or {}
+        super().__init__("{} GPG Key", existing_data)
 
-    def compose(self) -> ComposeResult:
-        with Vertical(id="dialog"):
-            yield Label("Edit Database" if self.existing_data else "Add Database", id="title")
-            yield Input(placeholder="Name", id="db_name", value=self.existing_data.get("name", ""))
-            yield Input(placeholder="Type (e.g., postgres)", id="db_type", value=self.existing_data.get("type", ""))
-            yield Input(placeholder="Host", id="db_host", value=self.existing_data.get("host", ""))
-            yield Input(placeholder="Port", id="db_port", value=str(self.existing_data.get("port", "")))
-            yield Input(placeholder="User", id="db_user", value=self.existing_data.get("user", ""))
-            yield Input(placeholder="Database Name", id="db_dbname", value=self.existing_data.get("db_name", ""))
-            yield Input(placeholder="Description (optional)", id="db_desc", value=self.existing_data.get("description", ""))
-            with Horizontal():
-                yield Button("Save", variant="success", id="save_db")
-                yield Button("Cancel", variant="error", id="cancel")
+    def compose_inputs(self) -> ComposeResult:
+        yield Input(placeholder="Name", id="gpg_name", value=self.existing_data.get("name", ""))
+        yield Input(placeholder="Key ID", id="gpg_key_id", value=self.existing_data.get("key_id", ""))
+        yield Input(placeholder="Email", id="gpg_email", value=self.existing_data.get("email", ""))
+        yield Input(placeholder="Description (optional)", id="gpg_desc", value=self.existing_data.get("description", ""))
 
-    def on_button_pressed(self, event: Button.Pressed) -> None:
-        if event.button.id == "save_db":
-            data = {
-                "name": self.query_one("#db_name").value,
-                "type": self.query_one("#db_type").value,
-                "host": self.query_one("#db_host").value,
-                "port": self.query_one("#db_port").value,
-                "user": self.query_one("#db_user").value,
-                "db_name": self.query_one("#db_dbname").value,
-                "description": self.query_one("#db_desc").value,
-            }
-            self.dismiss(data)
-        elif event.button.id == "cancel":
-            self.dismiss(None)
+    def get_form_data(self) -> dict:
+        return {
+            "name": self.query_one("#gpg_name").value,
+            "key_id": self.query_one("#gpg_key_id").value,
+            "email": self.query_one("#gpg_email").value,
+            "description": self.query_one("#gpg_desc").value,
+        }
+
+class DatabaseModal(BaseFormModal):
+    def __init__(self, existing_data: dict | None = None):
+        super().__init__("{} Database", existing_data)
+
+    def compose_inputs(self) -> ComposeResult:
+        yield Input(placeholder="Name", id="db_name", value=self.existing_data.get("name", ""))
+        yield Input(placeholder="Type (e.g., postgres)", id="db_type", value=self.existing_data.get("type", ""))
+        yield Input(placeholder="Host", id="db_host", value=self.existing_data.get("host", ""))
+        yield Input(placeholder="Port", id="db_port", value=str(self.existing_data.get("port", "")))
+        yield Input(placeholder="User", id="db_user", value=self.existing_data.get("user", ""))
+        yield Input(placeholder="Database Name", id="db_dbname", value=self.existing_data.get("db_name", ""))
+        yield Input(placeholder="Description (optional)", id="db_desc", value=self.existing_data.get("description", ""))
+
+    def get_form_data(self) -> dict:
+        return {
+            "name": self.query_one("#db_name").value,
+            "type": self.query_one("#db_type").value,
+            "host": self.query_one("#db_host").value,
+            "port": self.query_one("#db_port").value,
+            "user": self.query_one("#db_user").value,
+            "db_name": self.query_one("#db_dbname").value,
+            "description": self.query_one("#db_desc").value,
+        }
 
 class ConfirmDeleteModal(ModalScreen[bool]):
     def __init__(self, item_name: str):
