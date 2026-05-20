@@ -264,7 +264,7 @@ class TrackerApp(App):
 
     def on_mount(self) -> None:
         self.current_view = "menu-ssh"
-        table = self.query_one(DataTable)
+        table = self.query_one("#data_table")
         self.setup_table(self.current_view)
 
         # Select first item
@@ -278,7 +278,7 @@ class TrackerApp(App):
             self.setup_table(item_id)
 
     def setup_table(self, view_id: str) -> None:
-        table = self.query_one(DataTable)
+        table = self.query_one("#data_table")
         table.clear(columns=True)
 
         if view_id == "menu-ssh":
@@ -291,7 +291,7 @@ class TrackerApp(App):
         self.load_data()
 
     def on_data_table_row_selected(self, event: DataTable.RowSelected) -> None:
-        table = self.query_one(DataTable)
+        table = self.query_one("#data_table")
         try:
             row_key = event.row_key
             row_data = table.get_row(row_key)
@@ -320,7 +320,7 @@ class TrackerApp(App):
             pass
 
     def on_data_table_row_highlighted(self, event: DataTable.RowHighlighted) -> None:
-        table = self.query_one(DataTable)
+        table = self.query_one("#data_table")
         try:
             row_key = event.row_key
             row_data = table.get_row(row_key)
@@ -349,28 +349,29 @@ class TrackerApp(App):
             pass
 
     def load_data(self) -> None:
-        table = self.query_one(DataTable)
+        table = self.query_one("#data_table")
         table.clear()
         db.connect(reuse_if_open=True)
 
-        if self.current_view == "menu-ssh":
-            for name, host, user, port, identity_file, description in SSHKey.select(SSHKey.name, SSHKey.host, SSHKey.user, SSHKey.port, SSHKey.identity_file, SSHKey.description).tuples():
-                table.add_row(name, host, user, str(port), identity_file or "", description or "")
-        elif self.current_view == "menu-gpg":
-            for name, key_id, email, description in GPGKey.select(GPGKey.name, GPGKey.key_id, GPGKey.email, GPGKey.description).tuples():
-                table.add_row(name, key_id, email, description or "")
-        elif self.current_view == "menu-db":
-            for name, type_, host, port, user, db_name, description in Database.select(Database.name, Database.type, Database.host, Database.port, Database.user, Database.db_name, Database.description).tuples():
-                table.add_row(name, type_, host, str(port), user, db_name, description or "")
-
-        if not db.is_closed():
-            db.close()
+        try:
+            if self.current_view == "menu-ssh":
+                for id_, name, host, user, port, identity_file, description in SSHKey.select(SSHKey.id, SSHKey.name, SSHKey.host, SSHKey.user, SSHKey.port, SSHKey.identity_file, SSHKey.description).tuples():
+                    table.add_row(name, host, user, str(port), identity_file or "", description or "", key=str(id_))
+            elif self.current_view == "menu-gpg":
+                for id_, name, key_id, email, description in GPGKey.select(GPGKey.id, GPGKey.name, GPGKey.key_id, GPGKey.email, GPGKey.description).tuples():
+                    table.add_row(name, key_id, email, description or "", key=str(id_))
+            elif self.current_view == "menu-db":
+                for id_, name, type_, host, port, user, db_name, description in Database.select(Database.id, Database.name, Database.type, Database.host, Database.port, Database.user, Database.db_name, Database.description).tuples():
+                    table.add_row(name, type_, host, str(port), user, db_name, description or "", key=str(id_))
+        finally:
+            if not db.is_closed():
+                db.close()
 
     def action_edit_entry(self) -> None:
         self.edit_entry()
 
     def action_delete_entry(self) -> None:
-        table = self.query_one(DataTable)
+        table = self.query_one("#data_table")
         try:
             row_key = table.coordinate_to_cell_key(table.cursor_coordinate).row_key
             row_data = table.get_row(row_key)
@@ -411,7 +412,7 @@ class TrackerApp(App):
             self.action_delete_entry()
 
     def edit_entry(self) -> None:
-        table = self.query_one(DataTable)
+        table = self.query_one("#data_table")
         try:
             row_key = table.coordinate_to_cell_key(table.cursor_coordinate).row_key
             row_data = table.get_row(row_key)
