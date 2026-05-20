@@ -542,6 +542,10 @@ class TrackerApp(App):
                 try:
                     db.connect(reuse_if_open=True)
                     database = Database.create(**data)
+                except Exception as e:
+                    self.notify(f"Error adding Database: {e}", severity="error")
+                    return
+                try:
                     table = self.query_one("#data_table", DataTable)
                     table.add_row(database.name, database.type, database.host, str(database.port), database.user, database.db_name, database.description or "", key=str(database.id))
                 except Exception as e:
