@@ -503,8 +503,9 @@ class TrackerApp(App):
             if data and data["name"]:
                 try:
                     db.connect(reuse_if_open=True)
-                    SSHKey.create(**data)
-                    self.load_data()
+                    record = SSHKey.create(**data)
+                    table = self.query_one("#data_table")
+                    table.add_row(record.name, record.host, record.user, str(record.port), record.identity_file or "", record.description or "", key=str(record.id))
                 except Exception as e:
                     self.notify(f"Error adding SSH Key: {e}", severity="error")
                 finally:
@@ -517,8 +518,9 @@ class TrackerApp(App):
             if data and data["name"]:
                 try:
                     db.connect(reuse_if_open=True)
-                    GPGKey.create(**data)
-                    self.load_data()
+                    record = GPGKey.create(**data)
+                    table = self.query_one("#data_table")
+                    table.add_row(record.name, record.key_id, record.email, record.description or "", key=str(record.id))
                 except Exception as e:
                     self.notify(f"Error adding GPG Key: {e}", severity="error")
                 finally:
@@ -531,8 +533,9 @@ class TrackerApp(App):
             if data and data["name"]:
                 try:
                     db.connect(reuse_if_open=True)
-                    Database.create(**data)
-                    self.load_data()
+                    record = Database.create(**data)
+                    table = self.query_one("#data_table")
+                    table.add_row(record.name, record.type, record.host, str(record.port), record.user, record.db_name, record.description or "", key=str(record.id))
                 except Exception as e:
                     self.notify(f"Error adding Database: {e}", severity="error")
                 finally:
