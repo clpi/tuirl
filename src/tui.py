@@ -522,8 +522,9 @@ class TrackerApp(App):
                 try:
                     db.connect(reuse_if_open=True)
                     new_gpg = GPGKey.create(**data)
-                    table = self.query_one("#data_table")
-                    table.add_row(new_gpg.name, new_gpg.key_id, new_gpg.email, new_gpg.description or "", key=new_gpg.name)
+                    if self.current_view == "menu-gpg":
+                        table = self.query_one("#data_table")
+                        table.add_row(new_gpg.name, new_gpg.key_id, new_gpg.email, new_gpg.description or "", key=new_gpg.name)
                 except Exception as e:
                     self.notify(f"Error adding GPG Key: {e}", severity="error")
                 finally:
