@@ -508,6 +508,10 @@ class TrackerApp(App):
                 try:
                     db.connect(reuse_if_open=True)
                     ssh = SSHKey.create(**data)
+                except Exception as e:
+                    self.notify(f"Error adding SSH Key: {e}", severity="error")
+                    return
+                try:
                     table = self.query_one("#data_table", DataTable)
                     table.add_row(ssh.name, ssh.host, ssh.user, str(ssh.port), ssh.identity_file or "", ssh.description or "", key=str(ssh.id))
                 except Exception as e:
