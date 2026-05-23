@@ -8,3 +8,14 @@
 - **With `.tuples()` (Optimized):** `0.138s`
 
 This optimization yields approximately a **60.2% performance improvement** (2.5x faster) on the query traversal loop.
+
+---
+
+🧪 **What:** Tested UI Modal Form Data Extraction
+* `SSHModal`
+* `GPGModal`
+* `DatabaseModal`
+
+📊 **Coverage:** Covered normal cases of querying the Textual DOM nodes to simulate user input. Also covered testing edge cases for `SSHModal` when `port` input is left empty where it defaults to `22`.
+
+✨ **Result:** Improved test coverage on UI modal components, increasing confidence when refactoring form inputs and ensuring that user inputs are correctly passed to the core logic.
