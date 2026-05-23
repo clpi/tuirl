@@ -384,11 +384,11 @@ class TrackerApp(App):
                 db.connect(reuse_if_open=True)
                 try:
                     if self.current_view == "menu-ssh":
-                        SSHKey.get(SSHKey.name == name).delete_instance()
+                        SSHKey.delete().where(SSHKey.name == name).execute()
                     elif self.current_view == "menu-gpg":
-                        GPGKey.get(GPGKey.name == name).delete_instance()
+                        GPGKey.delete().where(GPGKey.name == name).execute()
                     elif self.current_view == "menu-db":
-                        Database.get(Database.name == name).delete_instance()
+                        Database.delete().where(Database.name == name).execute()
                     self.load_data()
                     self.notify(f"Deleted '{name}'.")
                 except Exception as e:
