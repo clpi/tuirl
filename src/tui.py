@@ -49,7 +49,7 @@ class SSHModal(BaseFormModal):
             "name": self.query_one("#ssh_name").value,
             "host": self.query_one("#ssh_host").value,
             "user": self.query_one("#ssh_user").value,
-            "port": self.query_one("#ssh_port").value or 22,
+            "port": int(self.query_one("#ssh_port").value or 22),
             "identity_file": self.query_one("#ssh_identity").value,
             "description": self.query_one("#ssh_desc").value,
         }
@@ -90,7 +90,7 @@ class DatabaseModal(BaseFormModal):
             "name": self.query_one("#db_name").value,
             "type": self.query_one("#db_type").value,
             "host": self.query_one("#db_host").value,
-            "port": self.query_one("#db_port").value,
+            "port": int(self.query_one("#db_port").value or 0),
             "user": self.query_one("#db_user").value,
             "db_name": self.query_one("#db_dbname").value,
             "description": self.query_one("#db_desc").value,
@@ -265,7 +265,6 @@ class TrackerApp(App):
 
     def on_mount(self) -> None:
         self.current_view = "menu-ssh"
-        table = self.query_one("#data_table")
         self.setup_table(self.current_view)
 
         # Select first item
@@ -308,6 +307,11 @@ class TrackerApp(App):
                 elif self.current_view == "menu-db":
                     record = Database.get(Database.name == name)
                     detail_text = f"[b][#44bbaa]Name:[/#44bbaa][/b] {escape(str(record.name))}\n[b][#44bbaa]Type:[/#44bbaa][/b] {escape(str(record.type))}\n[b][#44bbaa]Host:[/#44bbaa][/b] {escape(str(record.host))}\n[b][#44bbaa]Port:[/#44bbaa][/b] {escape(str(record.port))}\n[b][#44bbaa]User:[/#44bbaa][/b] {escape(str(record.user))}\n[b][#44bbaa]Database Name:[/#44bbaa][/b] {escape(str(record.db_name))}\n[b][#44bbaa]Description:[/#44bbaa][/b] {escape(str(record.description or 'None'))}"
+            except Exception as e:
+                self.notify(f"Error viewing details: {e}", severity="error")
+            finally:
+                if not db.is_closed():
+                    db.close()
 
             if self.current_view == "menu-ssh":
                 detail_text = f"[b][#44bbaa]Name:[/#44bbaa][/b] {row_data[0]}\
@@ -352,6 +356,11 @@ class TrackerApp(App):
                 elif self.current_view == "menu-db":
                     record = Database.get(Database.name == name)
                     detail_text = f"[b][#44bbaa]Name:[/#44bbaa][/b] {escape(str(record.name))}\n[b][#44bbaa]Type:[/#44bbaa][/b] {escape(str(record.type))}\n[b][#44bbaa]Host:[/#44bbaa][/b] {escape(str(record.host))}\n[b][#44bbaa]Port:[/#44bbaa][/b] {escape(str(record.port))}\n[b][#44bbaa]User:[/#44bbaa][/b] {escape(str(record.user))}\n[b][#44bbaa]Database Name:[/#44bbaa][/b] {escape(str(record.db_name))}\n[b][#44bbaa]Description:[/#44bbaa][/b] {escape(str(record.description or 'None'))}"
+            except Exception as e:
+                self.notify(f"Error viewing details: {e}", severity="error")
+            finally:
+                if not db.is_closed():
+                    db.close()
 
             if self.current_view == "menu-ssh":
                 detail_text = f"[b][#44bbaa]Name:[/#44bbaa][/b] {row_data[0]}\
