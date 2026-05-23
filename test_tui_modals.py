@@ -25,7 +25,7 @@ async def test_ssh_modal_get_form_data():
             "name": "myssh",
             "host": "192.168.1.1",
             "user": "root",
-            "port": "2222",
+            "port": 2222,
             "identity_file": "~/.ssh/id_rsa",
             "description": "Test SSH key",
         }
