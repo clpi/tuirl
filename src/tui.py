@@ -92,7 +92,7 @@ class DatabaseModal(BaseFormModal):
             "name": self.query_one("#db_name").value,
             "type": self.query_one("#db_type").value,
             "host": self.query_one("#db_host").value,
-            "port": int(port_val) if port_val else None,
+            "port": int(port_val) if port_val and port_val.isdigit() else None,
             "user": self.query_one("#db_user").value,
             "db_name": self.query_one("#db_dbname").value,
             "description": self.query_one("#db_desc").value,
