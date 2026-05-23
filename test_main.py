@@ -1,6 +1,5 @@
 import unittest
 from unittest.mock import patch
-from src.models import init_db
 from src.tui import TrackerApp
 
 class TestMainApplication(unittest.TestCase):
