@@ -1,3 +1,4 @@
+from rich.markup import escape
 from textual.app import App, ComposeResult
 from textual.widgets import Header, Footer, DataTable, Button, Input, Label, ListView, ListItem, TabbedContent, TabPane
 from textual.containers import Horizontal, Vertical
@@ -264,7 +265,7 @@ class TrackerApp(App):
 
     def on_mount(self) -> None:
         self.current_view = "menu-ssh"
-        table = self.query_one("#data_table", DataTable)
+        table = self.query_one("#data_table")
         self.setup_table(self.current_view)
 
         # Select first item
@@ -278,7 +279,7 @@ class TrackerApp(App):
             self.setup_table(item_id)
 
     def setup_table(self, view_id: str) -> None:
-        table = self.query_one("#data_table", DataTable)
+        table = self.query_one("#data_table")
         table.clear(columns=True)
 
         if view_id == "menu-ssh":
@@ -291,94 +292,126 @@ class TrackerApp(App):
         self.load_data()
 
     def on_data_table_row_selected(self, event: DataTable.RowSelected) -> None:
-        table = self.query_one("#data_table", DataTable)
+        table = self.query_one("#data_table")
         try:
             row_key = event.row_key
             row_data = table.get_row(row_key)
-            name = row_data[0]
-
             detail_view = self.query_one("#detail_view", Label)
             db.connect(reuse_if_open=True)
             try:
                 if self.current_view == "menu-ssh":
                     record = SSHKey.get(SSHKey.name == name)
-                    detail_text = f"[b][#44bbaa]Name:[/#44bbaa][/b] {record.name}\n[b][#44bbaa]Host:[/#44bbaa][/b] {record.host}\n[b][#44bbaa]User:[/#44bbaa][/b] {record.user}\n[b][#44bbaa]Port:[/#44bbaa][/b] {record.port}\n[b][#44bbaa]Identity File:[/#44bbaa][/b] {record.identity_file or 'None'}\n[b][#44bbaa]Description:[/#44bbaa][/b] {record.description or 'None'}"
+                    detail_text = f"[b][#44bbaa]Name:[/#44bbaa][/b] {escape(str(record.name))}\n[b][#44bbaa]Host:[/#44bbaa][/b] {escape(str(record.host))}\n[b][#44bbaa]User:[/#44bbaa][/b] {escape(str(record.user))}\n[b][#44bbaa]Port:[/#44bbaa][/b] {escape(str(record.port))}\n[b][#44bbaa]Identity File:[/#44bbaa][/b] {escape(str(record.identity_file or 'None'))}\n[b][#44bbaa]Description:[/#44bbaa][/b] {escape(str(record.description or 'None'))}"
                 elif self.current_view == "menu-gpg":
                     record = GPGKey.get(GPGKey.name == name)
-                    detail_text = f"[b][#44bbaa]Name:[/#44bbaa][/b] {record.name}\n[b][#44bbaa]Key ID:[/#44bbaa][/b] {record.key_id}\n[b][#44bbaa]Email:[/#44bbaa][/b] {record.email}\n[b][#44bbaa]Description:[/#44bbaa][/b] {record.description or 'None'}"
+                    detail_text = f"[b][#44bbaa]Name:[/#44bbaa][/b] {escape(str(record.name))}\n[b][#44bbaa]Key ID:[/#44bbaa][/b] {escape(str(record.key_id))}\n[b][#44bbaa]Email:[/#44bbaa][/b] {escape(str(record.email))}\n[b][#44bbaa]Description:[/#44bbaa][/b] {escape(str(record.description or 'None'))}"
                 elif self.current_view == "menu-db":
                     record = Database.get(Database.name == name)
-                    detail_text = f"[b][#44bbaa]Name:[/#44bbaa][/b] {record.name}\n[b][#44bbaa]Type:[/#44bbaa][/b] {record.type}\n[b][#44bbaa]Host:[/#44bbaa][/b] {record.host}\n[b][#44bbaa]Port:[/#44bbaa][/b] {record.port}\n[b][#44bbaa]User:[/#44bbaa][/b] {record.user}\n[b][#44bbaa]Database Name:[/#44bbaa][/b] {record.db_name}\n[b][#44bbaa]Description:[/#44bbaa][/b] {record.description or 'None'}"
+                    detail_text = f"[b][#44bbaa]Name:[/#44bbaa][/b] {escape(str(record.name))}\n[b][#44bbaa]Type:[/#44bbaa][/b] {escape(str(record.type))}\n[b][#44bbaa]Host:[/#44bbaa][/b] {escape(str(record.host))}\n[b][#44bbaa]Port:[/#44bbaa][/b] {escape(str(record.port))}\n[b][#44bbaa]User:[/#44bbaa][/b] {escape(str(record.user))}\n[b][#44bbaa]Database Name:[/#44bbaa][/b] {escape(str(record.db_name))}\n[b][#44bbaa]Description:[/#44bbaa][/b] {escape(str(record.description or 'None'))}"
 
+            if self.current_view == "menu-ssh":
+                detail_text = f"[b][#44bbaa]Name:[/#44bbaa][/b] {row_data[0]}\
+[b][#44bbaa]Host:[/#44bbaa][/b] {row_data[1]}\
+[b][#44bbaa]User:[/#44bbaa][/b] {row_data[2]}\
+[b][#44bbaa]Port:[/#44bbaa][/b] {row_data[3]}\
+[b][#44bbaa]Identity File:[/#44bbaa][/b] {row_data[4] or 'None'}\
+[b][#44bbaa]Description:[/#44bbaa][/b] {row_data[5] or 'None'}"
+            elif self.current_view == "menu-gpg":
+                detail_text = f"[b][#44bbaa]Name:[/#44bbaa][/b] {row_data[0]}\
+[b][#44bbaa]Key ID:[/#44bbaa][/b] {row_data[1]}\
+[b][#44bbaa]Email:[/#44bbaa][/b] {row_data[2]}\
+[b][#44bbaa]Description:[/#44bbaa][/b] {row_data[3] or 'None'}"
+            elif self.current_view == "menu-db":
+                detail_text = f"[b][#44bbaa]Name:[/#44bbaa][/b] {row_data[0]}\
+[b][#44bbaa]Type:[/#44bbaa][/b] {row_data[1]}\
+[b][#44bbaa]Host:[/#44bbaa][/b] {row_data[2]}\
+[b][#44bbaa]Port:[/#44bbaa][/b] {row_data[3]}\
+[b][#44bbaa]User:[/#44bbaa][/b] {row_data[4]}\
+[b][#44bbaa]Database Name:[/#44bbaa][/b] {row_data[5]}\
+[b][#44bbaa]Description:[/#44bbaa][/b] {row_data[6] or 'None'}"
+
+            if detail_text:
                 detail_view.update(detail_text)
-            except Exception as e:
-                self.notify(f"Error fetching record details: {e}", severity="error")
-            finally:
-                if not db.is_closed():
-                    db.close()
-        except Exception:
-            pass
+        except Exception as e:
+            self.notify(f"Error rendering details: {e}", severity="error")
 
     def on_data_table_row_highlighted(self, event: DataTable.RowHighlighted) -> None:
-        table = self.query_one("#data_table", DataTable)
+        table = self.query_one("#data_table")
         try:
             row_key = event.row_key
             row_data = table.get_row(row_key)
-            name = row_data[0]
-
             detail_view = self.query_one("#detail_view", Label)
             db.connect(reuse_if_open=True)
             try:
                 if self.current_view == "menu-ssh":
                     record = SSHKey.get(SSHKey.name == name)
-                    detail_text = f"[b][#44bbaa]Name:[/#44bbaa][/b] {record.name}\n[b][#44bbaa]Host:[/#44bbaa][/b] {record.host}\n[b][#44bbaa]User:[/#44bbaa][/b] {record.user}\n[b][#44bbaa]Port:[/#44bbaa][/b] {record.port}\n[b][#44bbaa]Identity File:[/#44bbaa][/b] {record.identity_file or 'None'}\n[b][#44bbaa]Description:[/#44bbaa][/b] {record.description or 'None'}"
+                    detail_text = f"[b][#44bbaa]Name:[/#44bbaa][/b] {escape(str(record.name))}\n[b][#44bbaa]Host:[/#44bbaa][/b] {escape(str(record.host))}\n[b][#44bbaa]User:[/#44bbaa][/b] {escape(str(record.user))}\n[b][#44bbaa]Port:[/#44bbaa][/b] {escape(str(record.port))}\n[b][#44bbaa]Identity File:[/#44bbaa][/b] {escape(str(record.identity_file or 'None'))}\n[b][#44bbaa]Description:[/#44bbaa][/b] {escape(str(record.description or 'None'))}"
                 elif self.current_view == "menu-gpg":
                     record = GPGKey.get(GPGKey.name == name)
-                    detail_text = f"[b][#44bbaa]Name:[/#44bbaa][/b] {record.name}\n[b][#44bbaa]Key ID:[/#44bbaa][/b] {record.key_id}\n[b][#44bbaa]Email:[/#44bbaa][/b] {record.email}\n[b][#44bbaa]Description:[/#44bbaa][/b] {record.description or 'None'}"
+                    detail_text = f"[b][#44bbaa]Name:[/#44bbaa][/b] {escape(str(record.name))}\n[b][#44bbaa]Key ID:[/#44bbaa][/b] {escape(str(record.key_id))}\n[b][#44bbaa]Email:[/#44bbaa][/b] {escape(str(record.email))}\n[b][#44bbaa]Description:[/#44bbaa][/b] {escape(str(record.description or 'None'))}"
                 elif self.current_view == "menu-db":
                     record = Database.get(Database.name == name)
-                    detail_text = f"[b][#44bbaa]Name:[/#44bbaa][/b] {record.name}\n[b][#44bbaa]Type:[/#44bbaa][/b] {record.type}\n[b][#44bbaa]Host:[/#44bbaa][/b] {record.host}\n[b][#44bbaa]Port:[/#44bbaa][/b] {record.port}\n[b][#44bbaa]User:[/#44bbaa][/b] {record.user}\n[b][#44bbaa]Database Name:[/#44bbaa][/b] {record.db_name}\n[b][#44bbaa]Description:[/#44bbaa][/b] {record.description or 'None'}"
+                    detail_text = f"[b][#44bbaa]Name:[/#44bbaa][/b] {escape(str(record.name))}\n[b][#44bbaa]Type:[/#44bbaa][/b] {escape(str(record.type))}\n[b][#44bbaa]Host:[/#44bbaa][/b] {escape(str(record.host))}\n[b][#44bbaa]Port:[/#44bbaa][/b] {escape(str(record.port))}\n[b][#44bbaa]User:[/#44bbaa][/b] {escape(str(record.user))}\n[b][#44bbaa]Database Name:[/#44bbaa][/b] {escape(str(record.db_name))}\n[b][#44bbaa]Description:[/#44bbaa][/b] {escape(str(record.description or 'None'))}"
 
+            if self.current_view == "menu-ssh":
+                detail_text = f"[b][#44bbaa]Name:[/#44bbaa][/b] {row_data[0]}\
+[b][#44bbaa]Host:[/#44bbaa][/b] {row_data[1]}\
+[b][#44bbaa]User:[/#44bbaa][/b] {row_data[2]}\
+[b][#44bbaa]Port:[/#44bbaa][/b] {row_data[3]}\
+[b][#44bbaa]Identity File:[/#44bbaa][/b] {row_data[4] or 'None'}\
+[b][#44bbaa]Description:[/#44bbaa][/b] {row_data[5] or 'None'}"
+            elif self.current_view == "menu-gpg":
+                detail_text = f"[b][#44bbaa]Name:[/#44bbaa][/b] {row_data[0]}\
+[b][#44bbaa]Key ID:[/#44bbaa][/b] {row_data[1]}\
+[b][#44bbaa]Email:[/#44bbaa][/b] {row_data[2]}\
+[b][#44bbaa]Description:[/#44bbaa][/b] {row_data[3] or 'None'}"
+            elif self.current_view == "menu-db":
+                detail_text = f"[b][#44bbaa]Name:[/#44bbaa][/b] {row_data[0]}\
+[b][#44bbaa]Type:[/#44bbaa][/b] {row_data[1]}\
+[b][#44bbaa]Host:[/#44bbaa][/b] {row_data[2]}\
+[b][#44bbaa]Port:[/#44bbaa][/b] {row_data[3]}\
+[b][#44bbaa]User:[/#44bbaa][/b] {row_data[4]}\
+[b][#44bbaa]Database Name:[/#44bbaa][/b] {row_data[5]}\
+[b][#44bbaa]Description:[/#44bbaa][/b] {row_data[6] or 'None'}"
+
+            if detail_text:
                 detail_view.update(detail_text)
-            except Exception as e:
-                pass
-            finally:
-                if not db.is_closed():
-                    db.close()
         except Exception:
             pass
 
     def load_data(self) -> None:
-        table = self.query_one("#data_table", DataTable)
+        table = self.query_one("#data_table")
         table.clear()
         db.connect(reuse_if_open=True)
 
-        try:
-            if self.current_view == "menu-ssh":
-                for id, name, host, user, port, identity_file, description in SSHKey.select(SSHKey.id, SSHKey.name, SSHKey.host, SSHKey.user, SSHKey.port, SSHKey.identity_file, SSHKey.description).tuples():
-                    table.add_row(name, host, user, str(port), identity_file or "", description or "", key=str(id))
-            elif self.current_view == "menu-gpg":
-                for id, name, key_id, email, description in GPGKey.select(GPGKey.id, GPGKey.name, GPGKey.key_id, GPGKey.email, GPGKey.description).tuples():
-                    table.add_row(name, key_id, email, description or "", key=str(id))
-            elif self.current_view == "menu-db":
-                for id, name, type_, host, port, user, db_name, description in Database.select(Database.id, Database.name, Database.type, Database.host, Database.port, Database.user, Database.db_name, Database.description).tuples():
-                    table.add_row(name, type_, host, str(port), user, db_name, description or "", key=str(id))
-        except Exception as e:
-            self.notify(f"Error loading data: {e}", severity="error")
-        finally:
-            if not db.is_closed():
-                db.close()
+        if self.current_view == "menu-ssh":
+            for id, name, host, user, port, identity_file, description in SSHKey.select(SSHKey.id, SSHKey.name, SSHKey.host, SSHKey.user, SSHKey.port, SSHKey.identity_file, SSHKey.description).tuples():
+                table.add_row(name, host, user, str(port), identity_file or "", description or "", key=str(id))
+        elif self.current_view == "menu-gpg":
+            for id, name, key_id, email, description in GPGKey.select(GPGKey.id, GPGKey.name, GPGKey.key_id, GPGKey.email, GPGKey.description).tuples():
+                table.add_row(name, key_id, email, description or "", key=str(id))
+        elif self.current_view == "menu-db":
+            for id, name, type_, host, port, user, db_name, description in Database.select(Database.id, Database.name, Database.type, Database.host, Database.port, Database.user, Database.db_name, Database.description).tuples():
+                table.add_row(name, type_, host, str(port), user, db_name, description or "", key=str(id))
+
+        if not db.is_closed():
+            db.close()
 
     def action_edit_entry(self) -> None:
         self.edit_entry()
 
-    def action_delete_entry(self) -> None:
+    def get_selected_item_name(self) -> str | None:
         table = self.query_one("#data_table", DataTable)
         try:
             row_key = table.coordinate_to_cell_key(table.cursor_coordinate).row_key
             row_data = table.get_row(row_key)
-            name = row_data[0] # The name is the first column
+            return str(row_data[0]) # The name is the first column
         except Exception:
+            return None
+
+    def action_delete_entry(self) -> None:
+        name = self.get_selected_item_name()
+        if not name:
             self.notify("Please select an item to delete.", severity="warning")
             return
 
@@ -387,11 +420,11 @@ class TrackerApp(App):
                 db.connect(reuse_if_open=True)
                 try:
                     if self.current_view == "menu-ssh":
-                        SSHKey.get(SSHKey.name == name).delete_instance()
+                        SSHKey.delete().where(SSHKey.name == name).execute()
                     elif self.current_view == "menu-gpg":
-                        GPGKey.get(GPGKey.name == name).delete_instance()
+                        GPGKey.delete().where(GPGKey.name == name).execute()
                     elif self.current_view == "menu-db":
-                        Database.get(Database.name == name).delete_instance()
+                        Database.delete().where(Database.name == name).execute()
                     self.load_data()
                     self.notify(f"Deleted '{name}'.")
                 except Exception as e:
@@ -414,12 +447,8 @@ class TrackerApp(App):
             self.action_delete_entry()
 
     def edit_entry(self) -> None:
-        table = self.query_one("#data_table", DataTable)
-        try:
-            row_key = table.coordinate_to_cell_key(table.cursor_coordinate).row_key
-            row_data = table.get_row(row_key)
-            name = row_data[0] # The name is the first column
-        except Exception:
+        name = self.get_selected_item_name()
+        if not name:
             self.notify("Please select an item to edit.", severity="warning")
             return
 
@@ -451,7 +480,16 @@ class TrackerApp(App):
                     for k, v in new_data.items():
                         setattr(record, k, v)
                     record.save()
-                    self.load_data()
+
+                    table = self.query_one("#data_table")
+                    row_key = str(record.id)
+                    columns = [col for col in table.columns]
+                    table.update_cell(row_key, columns[0], record.name, update_width=True)
+                    table.update_cell(row_key, columns[1], record.host, update_width=True)
+                    table.update_cell(row_key, columns[2], record.user, update_width=True)
+                    table.update_cell(row_key, columns[3], str(record.port), update_width=True)
+                    table.update_cell(row_key, columns[4], record.identity_file or "", update_width=True)
+                    table.update_cell(row_key, columns[5], record.description or "", update_width=True)
                 except Exception as e:
                     self.notify(f"Error editing SSH Key: {e}", severity="error")
                 finally:
@@ -467,7 +505,14 @@ class TrackerApp(App):
                     for k, v in new_data.items():
                         setattr(record, k, v)
                     record.save()
-                    self.load_data()
+
+                    table = self.query_one("#data_table")
+                    row_key = str(record.id)
+                    columns = [col for col in table.columns]
+                    table.update_cell(row_key, columns[0], record.name, update_width=True)
+                    table.update_cell(row_key, columns[1], record.key_id, update_width=True)
+                    table.update_cell(row_key, columns[2], record.email, update_width=True)
+                    table.update_cell(row_key, columns[3], record.description or "", update_width=True)
                 except Exception as e:
                     self.notify(f"Error editing GPG Key: {e}", severity="error")
                 finally:
@@ -485,7 +530,17 @@ class TrackerApp(App):
                     for k, v in new_data.items():
                         setattr(fresh_record, k, v)
                     fresh_record.save()
-                    self.load_data()
+
+                    table = self.query_one("#data_table")
+                    row_key = str(fresh_record.id)
+                    columns = [col for col in table.columns]
+                    table.update_cell(row_key, columns[0], fresh_record.name, update_width=True)
+                    table.update_cell(row_key, columns[1], fresh_record.type, update_width=True)
+                    table.update_cell(row_key, columns[2], fresh_record.host, update_width=True)
+                    table.update_cell(row_key, columns[3], str(fresh_record.port), update_width=True)
+                    table.update_cell(row_key, columns[4], fresh_record.user, update_width=True)
+                    table.update_cell(row_key, columns[5], fresh_record.db_name, update_width=True)
+                    table.update_cell(row_key, columns[6], fresh_record.description or "", update_width=True)
                 except Exception as e:
                     self.notify(f"Error editing Database: {e}", severity="error")
                 finally:
