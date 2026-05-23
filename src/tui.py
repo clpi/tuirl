@@ -50,7 +50,7 @@ class SSHModal(BaseFormModal):
             "name": self.query_one("#ssh_name").value,
             "host": self.query_one("#ssh_host").value,
             "user": self.query_one("#ssh_user").value,
-            "port": int(port_val) if port_val else 22,
+            "port": int(port_val) if port_val and port_val.isdigit() else 22,
             "identity_file": self.query_one("#ssh_identity").value,
             "description": self.query_one("#ssh_desc").value,
         }
