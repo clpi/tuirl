@@ -1,3 +1,4 @@
+from rich.markup import escape
 from textual.app import App, ComposeResult
 from textual.widgets import Header, Footer, DataTable, Button, Input, Label, ListView, ListItem, TabbedContent, TabPane
 from textual.containers import Horizontal, Vertical
@@ -302,13 +303,13 @@ class TrackerApp(App):
             try:
                 if self.current_view == "menu-ssh":
                     record = SSHKey.get(SSHKey.name == name)
-                    detail_text = f"[b][#44bbaa]Name:[/#44bbaa][/b] {record.name}\n[b][#44bbaa]Host:[/#44bbaa][/b] {record.host}\n[b][#44bbaa]User:[/#44bbaa][/b] {record.user}\n[b][#44bbaa]Port:[/#44bbaa][/b] {record.port}\n[b][#44bbaa]Identity File:[/#44bbaa][/b] {record.identity_file or 'None'}\n[b][#44bbaa]Description:[/#44bbaa][/b] {record.description or 'None'}"
+                    detail_text = f"[b][#44bbaa]Name:[/#44bbaa][/b] {escape(str(record.name))}\n[b][#44bbaa]Host:[/#44bbaa][/b] {escape(str(record.host))}\n[b][#44bbaa]User:[/#44bbaa][/b] {escape(str(record.user))}\n[b][#44bbaa]Port:[/#44bbaa][/b] {escape(str(record.port))}\n[b][#44bbaa]Identity File:[/#44bbaa][/b] {escape(str(record.identity_file or 'None'))}\n[b][#44bbaa]Description:[/#44bbaa][/b] {escape(str(record.description or 'None'))}"
                 elif self.current_view == "menu-gpg":
                     record = GPGKey.get(GPGKey.name == name)
-                    detail_text = f"[b][#44bbaa]Name:[/#44bbaa][/b] {record.name}\n[b][#44bbaa]Key ID:[/#44bbaa][/b] {record.key_id}\n[b][#44bbaa]Email:[/#44bbaa][/b] {record.email}\n[b][#44bbaa]Description:[/#44bbaa][/b] {record.description or 'None'}"
+                    detail_text = f"[b][#44bbaa]Name:[/#44bbaa][/b] {escape(str(record.name))}\n[b][#44bbaa]Key ID:[/#44bbaa][/b] {escape(str(record.key_id))}\n[b][#44bbaa]Email:[/#44bbaa][/b] {escape(str(record.email))}\n[b][#44bbaa]Description:[/#44bbaa][/b] {escape(str(record.description or 'None'))}"
                 elif self.current_view == "menu-db":
                     record = Database.get(Database.name == name)
-                    detail_text = f"[b][#44bbaa]Name:[/#44bbaa][/b] {record.name}\n[b][#44bbaa]Type:[/#44bbaa][/b] {record.type}\n[b][#44bbaa]Host:[/#44bbaa][/b] {record.host}\n[b][#44bbaa]Port:[/#44bbaa][/b] {record.port}\n[b][#44bbaa]User:[/#44bbaa][/b] {record.user}\n[b][#44bbaa]Database Name:[/#44bbaa][/b] {record.db_name}\n[b][#44bbaa]Description:[/#44bbaa][/b] {record.description or 'None'}"
+                    detail_text = f"[b][#44bbaa]Name:[/#44bbaa][/b] {escape(str(record.name))}\n[b][#44bbaa]Type:[/#44bbaa][/b] {escape(str(record.type))}\n[b][#44bbaa]Host:[/#44bbaa][/b] {escape(str(record.host))}\n[b][#44bbaa]Port:[/#44bbaa][/b] {escape(str(record.port))}\n[b][#44bbaa]User:[/#44bbaa][/b] {escape(str(record.user))}\n[b][#44bbaa]Database Name:[/#44bbaa][/b] {escape(str(record.db_name))}\n[b][#44bbaa]Description:[/#44bbaa][/b] {escape(str(record.description or 'None'))}"
 
                 detail_view.update(detail_text)
             except Exception as e:
@@ -331,13 +332,13 @@ class TrackerApp(App):
             try:
                 if self.current_view == "menu-ssh":
                     record = SSHKey.get(SSHKey.name == name)
-                    detail_text = f"[b][#44bbaa]Name:[/#44bbaa][/b] {record.name}\n[b][#44bbaa]Host:[/#44bbaa][/b] {record.host}\n[b][#44bbaa]User:[/#44bbaa][/b] {record.user}\n[b][#44bbaa]Port:[/#44bbaa][/b] {record.port}\n[b][#44bbaa]Identity File:[/#44bbaa][/b] {record.identity_file or 'None'}\n[b][#44bbaa]Description:[/#44bbaa][/b] {record.description or 'None'}"
+                    detail_text = f"[b][#44bbaa]Name:[/#44bbaa][/b] {escape(str(record.name))}\n[b][#44bbaa]Host:[/#44bbaa][/b] {escape(str(record.host))}\n[b][#44bbaa]User:[/#44bbaa][/b] {escape(str(record.user))}\n[b][#44bbaa]Port:[/#44bbaa][/b] {escape(str(record.port))}\n[b][#44bbaa]Identity File:[/#44bbaa][/b] {escape(str(record.identity_file or 'None'))}\n[b][#44bbaa]Description:[/#44bbaa][/b] {escape(str(record.description or 'None'))}"
                 elif self.current_view == "menu-gpg":
                     record = GPGKey.get(GPGKey.name == name)
-                    detail_text = f"[b][#44bbaa]Name:[/#44bbaa][/b] {record.name}\n[b][#44bbaa]Key ID:[/#44bbaa][/b] {record.key_id}\n[b][#44bbaa]Email:[/#44bbaa][/b] {record.email}\n[b][#44bbaa]Description:[/#44bbaa][/b] {record.description or 'None'}"
+                    detail_text = f"[b][#44bbaa]Name:[/#44bbaa][/b] {escape(str(record.name))}\n[b][#44bbaa]Key ID:[/#44bbaa][/b] {escape(str(record.key_id))}\n[b][#44bbaa]Email:[/#44bbaa][/b] {escape(str(record.email))}\n[b][#44bbaa]Description:[/#44bbaa][/b] {escape(str(record.description or 'None'))}"
                 elif self.current_view == "menu-db":
                     record = Database.get(Database.name == name)
-                    detail_text = f"[b][#44bbaa]Name:[/#44bbaa][/b] {record.name}\n[b][#44bbaa]Type:[/#44bbaa][/b] {record.type}\n[b][#44bbaa]Host:[/#44bbaa][/b] {record.host}\n[b][#44bbaa]Port:[/#44bbaa][/b] {record.port}\n[b][#44bbaa]User:[/#44bbaa][/b] {record.user}\n[b][#44bbaa]Database Name:[/#44bbaa][/b] {record.db_name}\n[b][#44bbaa]Description:[/#44bbaa][/b] {record.description or 'None'}"
+                    detail_text = f"[b][#44bbaa]Name:[/#44bbaa][/b] {escape(str(record.name))}\n[b][#44bbaa]Type:[/#44bbaa][/b] {escape(str(record.type))}\n[b][#44bbaa]Host:[/#44bbaa][/b] {escape(str(record.host))}\n[b][#44bbaa]Port:[/#44bbaa][/b] {escape(str(record.port))}\n[b][#44bbaa]User:[/#44bbaa][/b] {escape(str(record.user))}\n[b][#44bbaa]Database Name:[/#44bbaa][/b] {escape(str(record.db_name))}\n[b][#44bbaa]Description:[/#44bbaa][/b] {escape(str(record.description or 'None'))}"
 
                 detail_view.update(detail_text)
             except Exception as e:
@@ -369,13 +370,18 @@ class TrackerApp(App):
     def action_edit_entry(self) -> None:
         self.edit_entry()
 
-    def action_delete_entry(self) -> None:
-        table = self.query_one("#data_table")
+    def get_selected_item_name(self) -> str | None:
+        table = self.query_one("#data_table", DataTable)
         try:
             row_key = table.coordinate_to_cell_key(table.cursor_coordinate).row_key
             row_data = table.get_row(row_key)
-            name = row_data[0] # The name is the first column
+            return str(row_data[0]) # The name is the first column
         except Exception:
+            return None
+
+    def action_delete_entry(self) -> None:
+        name = self.get_selected_item_name()
+        if not name:
             self.notify("Please select an item to delete.", severity="warning")
             return
 
@@ -384,11 +390,11 @@ class TrackerApp(App):
                 db.connect(reuse_if_open=True)
                 try:
                     if self.current_view == "menu-ssh":
-                        SSHKey.get(SSHKey.name == name).delete_instance()
+                        SSHKey.delete().where(SSHKey.name == name).execute()
                     elif self.current_view == "menu-gpg":
-                        GPGKey.get(GPGKey.name == name).delete_instance()
+                        GPGKey.delete().where(GPGKey.name == name).execute()
                     elif self.current_view == "menu-db":
-                        Database.get(Database.name == name).delete_instance()
+                        Database.delete().where(Database.name == name).execute()
                     self.load_data()
                     self.notify(f"Deleted '{name}'.")
                 except Exception as e:
@@ -411,12 +417,8 @@ class TrackerApp(App):
             self.action_delete_entry()
 
     def edit_entry(self) -> None:
-        table = self.query_one("#data_table")
-        try:
-            row_key = table.coordinate_to_cell_key(table.cursor_coordinate).row_key
-            row_data = table.get_row(row_key)
-            name = row_data[0] # The name is the first column
-        except Exception:
+        name = self.get_selected_item_name()
+        if not name:
             self.notify("Please select an item to edit.", severity="warning")
             return
 
