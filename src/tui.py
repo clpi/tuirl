@@ -2,6 +2,7 @@ from textual.app import App, ComposeResult
 from textual.widgets import Header, Footer, DataTable, Button, Input, Label, ListView, ListItem, TabbedContent, TabPane
 from textual.containers import Horizontal, Vertical
 from textual.screen import ModalScreen
+from rich.markup import escape
 
 from .models import SSHKey, GPGKey, Database, db
 
@@ -102,7 +103,7 @@ class ConfirmDeleteModal(ModalScreen[bool]):
 
     def compose(self) -> ComposeResult:
         with Vertical(id="dialog"):
-            yield Label(f"Are you sure you want to delete '{self.item_name}'?", id="title")
+            yield Label(f"Are you sure you want to delete '{escape(self.item_name)}'?", id="title")
             with Horizontal():
                 yield Button("Yes", variant="error", id="btn_yes")
                 yield Button("No", variant="primary", id="btn_no")
