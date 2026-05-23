@@ -17,7 +17,6 @@ async def main():
 
         # Take a screenshot
         svg = app.export_screenshot(title="TrackerApp")
-        with open("screenshot.svg", "w") as f:
-            f.write(svg)
+        await asyncio.to_thread(Path("screenshot.svg").write_text, svg)
 
 asyncio.run(main())
