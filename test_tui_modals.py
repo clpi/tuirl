@@ -97,7 +97,7 @@ async def test_db_modal_get_form_data():
             "name": "mydb",
             "type": "postgres",
             "host": "localhost",
-            "port": "5432",
+            "port": 5432,
             "user": "dbuser",
             "db_name": "testdb",
             "description": "Test Database",
