@@ -2,6 +2,7 @@ from textual.app import App, ComposeResult
 from textual.widgets import Header, Footer, DataTable, Button, Input, Label, ListView, ListItem, TabbedContent, TabPane
 from textual.containers import Horizontal, Vertical
 from textual.screen import ModalScreen
+from rich.markup import escape
 
 from .models import SSHKey, GPGKey, Database, db
 
@@ -302,13 +303,13 @@ class TrackerApp(App):
             try:
                 if self.current_view == "menu-ssh":
                     record = SSHKey.get(SSHKey.name == name)
-                    detail_text = f"[b][#44bbaa]Name:[/#44bbaa][/b] {record.name}\n[b][#44bbaa]Host:[/#44bbaa][/b] {record.host}\n[b][#44bbaa]User:[/#44bbaa][/b] {record.user}\n[b][#44bbaa]Port:[/#44bbaa][/b] {record.port}\n[b][#44bbaa]Identity File:[/#44bbaa][/b] {record.identity_file or 'None'}\n[b][#44bbaa]Description:[/#44bbaa][/b] {record.description or 'None'}"
+                    detail_text = f"[b][#44bbaa]Name:[/#44bbaa][/b] {escape(str(record.name))}\n[b][#44bbaa]Host:[/#44bbaa][/b] {escape(str(record.host))}\n[b][#44bbaa]User:[/#44bbaa][/b] {escape(str(record.user))}\n[b][#44bbaa]Port:[/#44bbaa][/b] {escape(str(record.port))}\n[b][#44bbaa]Identity File:[/#44bbaa][/b] {escape(str(record.identity_file or 'None'))}\n[b][#44bbaa]Description:[/#44bbaa][/b] {escape(str(record.description or 'None'))}"
                 elif self.current_view == "menu-gpg":
                     record = GPGKey.get(GPGKey.name == name)
-                    detail_text = f"[b][#44bbaa]Name:[/#44bbaa][/b] {record.name}\n[b][#44bbaa]Key ID:[/#44bbaa][/b] {record.key_id}\n[b][#44bbaa]Email:[/#44bbaa][/b] {record.email}\n[b][#44bbaa]Description:[/#44bbaa][/b] {record.description or 'None'}"
+                    detail_text = f"[b][#44bbaa]Name:[/#44bbaa][/b] {escape(str(record.name))}\n[b][#44bbaa]Key ID:[/#44bbaa][/b] {escape(str(record.key_id))}\n[b][#44bbaa]Email:[/#44bbaa][/b] {escape(str(record.email))}\n[b][#44bbaa]Description:[/#44bbaa][/b] {escape(str(record.description or 'None'))}"
                 elif self.current_view == "menu-db":
                     record = Database.get(Database.name == name)
-                    detail_text = f"[b][#44bbaa]Name:[/#44bbaa][/b] {record.name}\n[b][#44bbaa]Type:[/#44bbaa][/b] {record.type}\n[b][#44bbaa]Host:[/#44bbaa][/b] {record.host}\n[b][#44bbaa]Port:[/#44bbaa][/b] {record.port}\n[b][#44bbaa]User:[/#44bbaa][/b] {record.user}\n[b][#44bbaa]Database Name:[/#44bbaa][/b] {record.db_name}\n[b][#44bbaa]Description:[/#44bbaa][/b] {record.description or 'None'}"
+                    detail_text = f"[b][#44bbaa]Name:[/#44bbaa][/b] {escape(str(record.name))}\n[b][#44bbaa]Type:[/#44bbaa][/b] {escape(str(record.type))}\n[b][#44bbaa]Host:[/#44bbaa][/b] {escape(str(record.host))}\n[b][#44bbaa]Port:[/#44bbaa][/b] {escape(str(record.port))}\n[b][#44bbaa]User:[/#44bbaa][/b] {escape(str(record.user))}\n[b][#44bbaa]Database Name:[/#44bbaa][/b] {escape(str(record.db_name))}\n[b][#44bbaa]Description:[/#44bbaa][/b] {escape(str(record.description or 'None'))}"
 
                 detail_view.update(detail_text)
             except Exception as e:
@@ -331,13 +332,13 @@ class TrackerApp(App):
             try:
                 if self.current_view == "menu-ssh":
                     record = SSHKey.get(SSHKey.name == name)
-                    detail_text = f"[b][#44bbaa]Name:[/#44bbaa][/b] {record.name}\n[b][#44bbaa]Host:[/#44bbaa][/b] {record.host}\n[b][#44bbaa]User:[/#44bbaa][/b] {record.user}\n[b][#44bbaa]Port:[/#44bbaa][/b] {record.port}\n[b][#44bbaa]Identity File:[/#44bbaa][/b] {record.identity_file or 'None'}\n[b][#44bbaa]Description:[/#44bbaa][/b] {record.description or 'None'}"
+                    detail_text = f"[b][#44bbaa]Name:[/#44bbaa][/b] {escape(str(record.name))}\n[b][#44bbaa]Host:[/#44bbaa][/b] {escape(str(record.host))}\n[b][#44bbaa]User:[/#44bbaa][/b] {escape(str(record.user))}\n[b][#44bbaa]Port:[/#44bbaa][/b] {escape(str(record.port))}\n[b][#44bbaa]Identity File:[/#44bbaa][/b] {escape(str(record.identity_file or 'None'))}\n[b][#44bbaa]Description:[/#44bbaa][/b] {escape(str(record.description or 'None'))}"
                 elif self.current_view == "menu-gpg":
                     record = GPGKey.get(GPGKey.name == name)
-                    detail_text = f"[b][#44bbaa]Name:[/#44bbaa][/b] {record.name}\n[b][#44bbaa]Key ID:[/#44bbaa][/b] {record.key_id}\n[b][#44bbaa]Email:[/#44bbaa][/b] {record.email}\n[b][#44bbaa]Description:[/#44bbaa][/b] {record.description or 'None'}"
+                    detail_text = f"[b][#44bbaa]Name:[/#44bbaa][/b] {escape(str(record.name))}\n[b][#44bbaa]Key ID:[/#44bbaa][/b] {escape(str(record.key_id))}\n[b][#44bbaa]Email:[/#44bbaa][/b] {escape(str(record.email))}\n[b][#44bbaa]Description:[/#44bbaa][/b] {escape(str(record.description or 'None'))}"
                 elif self.current_view == "menu-db":
                     record = Database.get(Database.name == name)
-                    detail_text = f"[b][#44bbaa]Name:[/#44bbaa][/b] {record.name}\n[b][#44bbaa]Type:[/#44bbaa][/b] {record.type}\n[b][#44bbaa]Host:[/#44bbaa][/b] {record.host}\n[b][#44bbaa]Port:[/#44bbaa][/b] {record.port}\n[b][#44bbaa]User:[/#44bbaa][/b] {record.user}\n[b][#44bbaa]Database Name:[/#44bbaa][/b] {record.db_name}\n[b][#44bbaa]Description:[/#44bbaa][/b] {record.description or 'None'}"
+                    detail_text = f"[b][#44bbaa]Name:[/#44bbaa][/b] {escape(str(record.name))}\n[b][#44bbaa]Type:[/#44bbaa][/b] {escape(str(record.type))}\n[b][#44bbaa]Host:[/#44bbaa][/b] {escape(str(record.host))}\n[b][#44bbaa]Port:[/#44bbaa][/b] {escape(str(record.port))}\n[b][#44bbaa]User:[/#44bbaa][/b] {escape(str(record.user))}\n[b][#44bbaa]Database Name:[/#44bbaa][/b] {escape(str(record.db_name))}\n[b][#44bbaa]Description:[/#44bbaa][/b] {escape(str(record.description or 'None'))}"
 
                 detail_view.update(detail_text)
             except Exception as e:
