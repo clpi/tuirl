@@ -296,8 +296,6 @@ class TrackerApp(App):
         try:
             row_key = event.row_key
             row_data = table.get_row(row_key)
-            name = row_data[0]
-
             detail_view = self.query_one("#detail_view", Label)
             db.connect(reuse_if_open=True)
             try:
@@ -311,22 +309,37 @@ class TrackerApp(App):
                     record = Database.get(Database.name == name)
                     detail_text = f"[b][#44bbaa]Name:[/#44bbaa][/b] {escape(str(record.name))}\n[b][#44bbaa]Type:[/#44bbaa][/b] {escape(str(record.type))}\n[b][#44bbaa]Host:[/#44bbaa][/b] {escape(str(record.host))}\n[b][#44bbaa]Port:[/#44bbaa][/b] {escape(str(record.port))}\n[b][#44bbaa]User:[/#44bbaa][/b] {escape(str(record.user))}\n[b][#44bbaa]Database Name:[/#44bbaa][/b] {escape(str(record.db_name))}\n[b][#44bbaa]Description:[/#44bbaa][/b] {escape(str(record.description or 'None'))}"
 
+            if self.current_view == "menu-ssh":
+                detail_text = f"[b][#44bbaa]Name:[/#44bbaa][/b] {row_data[0]}\
+[b][#44bbaa]Host:[/#44bbaa][/b] {row_data[1]}\
+[b][#44bbaa]User:[/#44bbaa][/b] {row_data[2]}\
+[b][#44bbaa]Port:[/#44bbaa][/b] {row_data[3]}\
+[b][#44bbaa]Identity File:[/#44bbaa][/b] {row_data[4] or 'None'}\
+[b][#44bbaa]Description:[/#44bbaa][/b] {row_data[5] or 'None'}"
+            elif self.current_view == "menu-gpg":
+                detail_text = f"[b][#44bbaa]Name:[/#44bbaa][/b] {row_data[0]}\
+[b][#44bbaa]Key ID:[/#44bbaa][/b] {row_data[1]}\
+[b][#44bbaa]Email:[/#44bbaa][/b] {row_data[2]}\
+[b][#44bbaa]Description:[/#44bbaa][/b] {row_data[3] or 'None'}"
+            elif self.current_view == "menu-db":
+                detail_text = f"[b][#44bbaa]Name:[/#44bbaa][/b] {row_data[0]}\
+[b][#44bbaa]Type:[/#44bbaa][/b] {row_data[1]}\
+[b][#44bbaa]Host:[/#44bbaa][/b] {row_data[2]}\
+[b][#44bbaa]Port:[/#44bbaa][/b] {row_data[3]}\
+[b][#44bbaa]User:[/#44bbaa][/b] {row_data[4]}\
+[b][#44bbaa]Database Name:[/#44bbaa][/b] {row_data[5]}\
+[b][#44bbaa]Description:[/#44bbaa][/b] {row_data[6] or 'None'}"
+
+            if detail_text:
                 detail_view.update(detail_text)
-            except Exception as e:
-                self.notify(f"Error fetching record details: {e}", severity="error")
-            finally:
-                if not db.is_closed():
-                    db.close()
-        except Exception:
-            pass
+        except Exception as e:
+            self.notify(f"Error rendering details: {e}", severity="error")
 
     def on_data_table_row_highlighted(self, event: DataTable.RowHighlighted) -> None:
         table = self.query_one("#data_table")
         try:
             row_key = event.row_key
             row_data = table.get_row(row_key)
-            name = row_data[0]
-
             detail_view = self.query_one("#detail_view", Label)
             db.connect(reuse_if_open=True)
             try:
@@ -340,12 +353,29 @@ class TrackerApp(App):
                     record = Database.get(Database.name == name)
                     detail_text = f"[b][#44bbaa]Name:[/#44bbaa][/b] {escape(str(record.name))}\n[b][#44bbaa]Type:[/#44bbaa][/b] {escape(str(record.type))}\n[b][#44bbaa]Host:[/#44bbaa][/b] {escape(str(record.host))}\n[b][#44bbaa]Port:[/#44bbaa][/b] {escape(str(record.port))}\n[b][#44bbaa]User:[/#44bbaa][/b] {escape(str(record.user))}\n[b][#44bbaa]Database Name:[/#44bbaa][/b] {escape(str(record.db_name))}\n[b][#44bbaa]Description:[/#44bbaa][/b] {escape(str(record.description or 'None'))}"
 
+            if self.current_view == "menu-ssh":
+                detail_text = f"[b][#44bbaa]Name:[/#44bbaa][/b] {row_data[0]}\
+[b][#44bbaa]Host:[/#44bbaa][/b] {row_data[1]}\
+[b][#44bbaa]User:[/#44bbaa][/b] {row_data[2]}\
+[b][#44bbaa]Port:[/#44bbaa][/b] {row_data[3]}\
+[b][#44bbaa]Identity File:[/#44bbaa][/b] {row_data[4] or 'None'}\
+[b][#44bbaa]Description:[/#44bbaa][/b] {row_data[5] or 'None'}"
+            elif self.current_view == "menu-gpg":
+                detail_text = f"[b][#44bbaa]Name:[/#44bbaa][/b] {row_data[0]}\
+[b][#44bbaa]Key ID:[/#44bbaa][/b] {row_data[1]}\
+[b][#44bbaa]Email:[/#44bbaa][/b] {row_data[2]}\
+[b][#44bbaa]Description:[/#44bbaa][/b] {row_data[3] or 'None'}"
+            elif self.current_view == "menu-db":
+                detail_text = f"[b][#44bbaa]Name:[/#44bbaa][/b] {row_data[0]}\
+[b][#44bbaa]Type:[/#44bbaa][/b] {row_data[1]}\
+[b][#44bbaa]Host:[/#44bbaa][/b] {row_data[2]}\
+[b][#44bbaa]Port:[/#44bbaa][/b] {row_data[3]}\
+[b][#44bbaa]User:[/#44bbaa][/b] {row_data[4]}\
+[b][#44bbaa]Database Name:[/#44bbaa][/b] {row_data[5]}\
+[b][#44bbaa]Description:[/#44bbaa][/b] {row_data[6] or 'None'}"
+
+            if detail_text:
                 detail_view.update(detail_text)
-            except Exception as e:
-                pass
-            finally:
-                if not db.is_closed():
-                    db.close()
         except Exception:
             pass
 
