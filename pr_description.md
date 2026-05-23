@@ -37,3 +37,21 @@ This optimization yields approximately a **60.2% performance improvement** (2.5x
 
 ✨ **Result:** Improved test coverage on UI modal components, increasing confidence when refactoring form inputs and ensuring that user inputs are correctly passed to the core logic.
 This optimization yields a roughly **9.6% performance improvement** in pure execution time. More importantly, it correctly avoids blocking the asyncio event loop, which is critical for the health and responsiveness of any async application.
+
+---
+
+## 🧹 Remove unused import in test_main.py and fix tests
+
+### 🎯 What
+* Removed the unused `from src.models import init_db` import from `test_main.py`.
+
+### 💡 Why
+* Removing unused imports cleans up the namespace and improves code health and maintainability.
+
+### ✅ Verification
+* Ran the full test suite (`python3 -m pytest`) to ensure all tests passed successfully.
+* Verified the formatting and syntax of the modified files.
+
+### ✨ Result
+* Cleaner `test_main.py` without unused imports.
+* The test suite now passes cleanly, indicating an overall improvement in code health.
