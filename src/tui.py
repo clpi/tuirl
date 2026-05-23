@@ -448,7 +448,16 @@ class TrackerApp(App):
                     for k, v in new_data.items():
                         setattr(record, k, v)
                     record.save()
-                    self.load_data()
+
+                    table = self.query_one("#data_table")
+                    row_key = str(record.id)
+                    columns = [col for col in table.columns]
+                    table.update_cell(row_key, columns[0], record.name, update_width=True)
+                    table.update_cell(row_key, columns[1], record.host, update_width=True)
+                    table.update_cell(row_key, columns[2], record.user, update_width=True)
+                    table.update_cell(row_key, columns[3], str(record.port), update_width=True)
+                    table.update_cell(row_key, columns[4], record.identity_file or "", update_width=True)
+                    table.update_cell(row_key, columns[5], record.description or "", update_width=True)
                 except Exception as e:
                     self.notify(f"Error editing SSH Key: {e}", severity="error")
                 finally:
@@ -464,7 +473,14 @@ class TrackerApp(App):
                     for k, v in new_data.items():
                         setattr(record, k, v)
                     record.save()
-                    self.load_data()
+
+                    table = self.query_one("#data_table")
+                    row_key = str(record.id)
+                    columns = [col for col in table.columns]
+                    table.update_cell(row_key, columns[0], record.name, update_width=True)
+                    table.update_cell(row_key, columns[1], record.key_id, update_width=True)
+                    table.update_cell(row_key, columns[2], record.email, update_width=True)
+                    table.update_cell(row_key, columns[3], record.description or "", update_width=True)
                 except Exception as e:
                     self.notify(f"Error editing GPG Key: {e}", severity="error")
                 finally:
@@ -482,7 +498,17 @@ class TrackerApp(App):
                     for k, v in new_data.items():
                         setattr(fresh_record, k, v)
                     fresh_record.save()
-                    self.load_data()
+
+                    table = self.query_one("#data_table")
+                    row_key = str(fresh_record.id)
+                    columns = [col for col in table.columns]
+                    table.update_cell(row_key, columns[0], fresh_record.name, update_width=True)
+                    table.update_cell(row_key, columns[1], fresh_record.type, update_width=True)
+                    table.update_cell(row_key, columns[2], fresh_record.host, update_width=True)
+                    table.update_cell(row_key, columns[3], str(fresh_record.port), update_width=True)
+                    table.update_cell(row_key, columns[4], fresh_record.user, update_width=True)
+                    table.update_cell(row_key, columns[5], fresh_record.db_name, update_width=True)
+                    table.update_cell(row_key, columns[6], fresh_record.description or "", update_width=True)
                 except Exception as e:
                     self.notify(f"Error editing Database: {e}", severity="error")
                 finally:
