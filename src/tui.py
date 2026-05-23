@@ -45,11 +45,12 @@ class SSHModal(BaseFormModal):
         yield Input(placeholder="Description (optional)", id="ssh_desc", value=self.existing_data.get("description", ""))
 
     def get_form_data(self) -> dict:
+        port_val = self.query_one("#ssh_port").value
         return {
             "name": self.query_one("#ssh_name").value,
             "host": self.query_one("#ssh_host").value,
             "user": self.query_one("#ssh_user").value,
-            "port": self.query_one("#ssh_port").value or 22,
+            "port": int(port_val) if port_val and port_val.isdigit() else 22,
             "identity_file": self.query_one("#ssh_identity").value,
             "description": self.query_one("#ssh_desc").value,
         }
@@ -86,11 +87,12 @@ class DatabaseModal(BaseFormModal):
         yield Input(placeholder="Description (optional)", id="db_desc", value=self.existing_data.get("description", ""))
 
     def get_form_data(self) -> dict:
+        port_val = self.query_one("#db_port").value
         return {
             "name": self.query_one("#db_name").value,
             "type": self.query_one("#db_type").value,
             "host": self.query_one("#db_host").value,
-            "port": self.query_one("#db_port").value,
+            "port": int(port_val) if port_val and port_val.isdigit() else None,
             "user": self.query_one("#db_user").value,
             "db_name": self.query_one("#db_dbname").value,
             "description": self.query_one("#db_desc").value,
@@ -292,92 +294,43 @@ class TrackerApp(App):
         self.load_data()
 
     def on_data_table_row_selected(self, event: DataTable.RowSelected) -> None:
+        self.update_detail_view(event.row_key)
+
+    def on_data_table_row_highlighted(self, event: DataTable.RowHighlighted) -> None:
+        self.update_detail_view(event.row_key)
+
+    def update_detail_view(self, row_key) -> None:
         table = self.query_one("#data_table")
         try:
-            row_key = event.row_key
             row_data = table.get_row(row_key)
             detail_view = self.query_one("#detail_view", Label)
-            db.connect(reuse_if_open=True)
-            try:
-                if self.current_view == "menu-ssh":
-                    record = SSHKey.get(SSHKey.name == name)
-                    detail_text = f"[b][#44bbaa]Name:[/#44bbaa][/b] {escape(str(record.name))}\n[b][#44bbaa]Host:[/#44bbaa][/b] {escape(str(record.host))}\n[b][#44bbaa]User:[/#44bbaa][/b] {escape(str(record.user))}\n[b][#44bbaa]Port:[/#44bbaa][/b] {escape(str(record.port))}\n[b][#44bbaa]Identity File:[/#44bbaa][/b] {escape(str(record.identity_file or 'None'))}\n[b][#44bbaa]Description:[/#44bbaa][/b] {escape(str(record.description or 'None'))}"
-                elif self.current_view == "menu-gpg":
-                    record = GPGKey.get(GPGKey.name == name)
-                    detail_text = f"[b][#44bbaa]Name:[/#44bbaa][/b] {escape(str(record.name))}\n[b][#44bbaa]Key ID:[/#44bbaa][/b] {escape(str(record.key_id))}\n[b][#44bbaa]Email:[/#44bbaa][/b] {escape(str(record.email))}\n[b][#44bbaa]Description:[/#44bbaa][/b] {escape(str(record.description or 'None'))}"
-                elif self.current_view == "menu-db":
-                    record = Database.get(Database.name == name)
-                    detail_text = f"[b][#44bbaa]Name:[/#44bbaa][/b] {escape(str(record.name))}\n[b][#44bbaa]Type:[/#44bbaa][/b] {escape(str(record.type))}\n[b][#44bbaa]Host:[/#44bbaa][/b] {escape(str(record.host))}\n[b][#44bbaa]Port:[/#44bbaa][/b] {escape(str(record.port))}\n[b][#44bbaa]User:[/#44bbaa][/b] {escape(str(record.user))}\n[b][#44bbaa]Database Name:[/#44bbaa][/b] {escape(str(record.db_name))}\n[b][#44bbaa]Description:[/#44bbaa][/b] {escape(str(record.description or 'None'))}"
+            detail_text = ""
 
             if self.current_view == "menu-ssh":
-                detail_text = f"[b][#44bbaa]Name:[/#44bbaa][/b] {row_data[0]}\
-[b][#44bbaa]Host:[/#44bbaa][/b] {row_data[1]}\
-[b][#44bbaa]User:[/#44bbaa][/b] {row_data[2]}\
-[b][#44bbaa]Port:[/#44bbaa][/b] {row_data[3]}\
-[b][#44bbaa]Identity File:[/#44bbaa][/b] {row_data[4] or 'None'}\
-[b][#44bbaa]Description:[/#44bbaa][/b] {row_data[5] or 'None'}"
+                detail_text = f"[b][#44bbaa]Name:[/#44bbaa][/b] {escape(str(row_data[0]))}\n" \
+                              f"[b][#44bbaa]Host:[/#44bbaa][/b] {escape(str(row_data[1]))}\n" \
+                              f"[b][#44bbaa]User:[/#44bbaa][/b] {escape(str(row_data[2]))}\n" \
+                              f"[b][#44bbaa]Port:[/#44bbaa][/b] {escape(str(row_data[3]))}\n" \
+                              f"[b][#44bbaa]Identity File:[/#44bbaa][/b] {escape(str(row_data[4] or 'None'))}\n" \
+                              f"[b][#44bbaa]Description:[/#44bbaa][/b] {escape(str(row_data[5] or 'None'))}"
             elif self.current_view == "menu-gpg":
-                detail_text = f"[b][#44bbaa]Name:[/#44bbaa][/b] {row_data[0]}\
-[b][#44bbaa]Key ID:[/#44bbaa][/b] {row_data[1]}\
-[b][#44bbaa]Email:[/#44bbaa][/b] {row_data[2]}\
-[b][#44bbaa]Description:[/#44bbaa][/b] {row_data[3] or 'None'}"
+                detail_text = f"[b][#44bbaa]Name:[/#44bbaa][/b] {escape(str(row_data[0]))}\n" \
+                              f"[b][#44bbaa]Key ID:[/#44bbaa][/b] {escape(str(row_data[1]))}\n" \
+                              f"[b][#44bbaa]Email:[/#44bbaa][/b] {escape(str(row_data[2]))}\n" \
+                              f"[b][#44bbaa]Description:[/#44bbaa][/b] {escape(str(row_data[3] or 'None'))}"
             elif self.current_view == "menu-db":
-                detail_text = f"[b][#44bbaa]Name:[/#44bbaa][/b] {row_data[0]}\
-[b][#44bbaa]Type:[/#44bbaa][/b] {row_data[1]}\
-[b][#44bbaa]Host:[/#44bbaa][/b] {row_data[2]}\
-[b][#44bbaa]Port:[/#44bbaa][/b] {row_data[3]}\
-[b][#44bbaa]User:[/#44bbaa][/b] {row_data[4]}\
-[b][#44bbaa]Database Name:[/#44bbaa][/b] {row_data[5]}\
-[b][#44bbaa]Description:[/#44bbaa][/b] {row_data[6] or 'None'}"
+                detail_text = f"[b][#44bbaa]Name:[/#44bbaa][/b] {escape(str(row_data[0]))}\n" \
+                              f"[b][#44bbaa]Type:[/#44bbaa][/b] {escape(str(row_data[1]))}\n" \
+                              f"[b][#44bbaa]Host:[/#44bbaa][/b] {escape(str(row_data[2]))}\n" \
+                              f"[b][#44bbaa]Port:[/#44bbaa][/b] {escape(str(row_data[3]))}\n" \
+                              f"[b][#44bbaa]User:[/#44bbaa][/b] {escape(str(row_data[4]))}\n" \
+                              f"[b][#44bbaa]Database Name:[/#44bbaa][/b] {escape(str(row_data[5]))}\n" \
+                              f"[b][#44bbaa]Description:[/#44bbaa][/b] {escape(str(row_data[6] or 'None'))}"
 
             if detail_text:
                 detail_view.update(detail_text)
         except Exception as e:
             self.notify(f"Error rendering details: {e}", severity="error")
-
-    def on_data_table_row_highlighted(self, event: DataTable.RowHighlighted) -> None:
-        table = self.query_one("#data_table")
-        try:
-            row_key = event.row_key
-            row_data = table.get_row(row_key)
-            detail_view = self.query_one("#detail_view", Label)
-            db.connect(reuse_if_open=True)
-            try:
-                if self.current_view == "menu-ssh":
-                    record = SSHKey.get(SSHKey.name == name)
-                    detail_text = f"[b][#44bbaa]Name:[/#44bbaa][/b] {escape(str(record.name))}\n[b][#44bbaa]Host:[/#44bbaa][/b] {escape(str(record.host))}\n[b][#44bbaa]User:[/#44bbaa][/b] {escape(str(record.user))}\n[b][#44bbaa]Port:[/#44bbaa][/b] {escape(str(record.port))}\n[b][#44bbaa]Identity File:[/#44bbaa][/b] {escape(str(record.identity_file or 'None'))}\n[b][#44bbaa]Description:[/#44bbaa][/b] {escape(str(record.description or 'None'))}"
-                elif self.current_view == "menu-gpg":
-                    record = GPGKey.get(GPGKey.name == name)
-                    detail_text = f"[b][#44bbaa]Name:[/#44bbaa][/b] {escape(str(record.name))}\n[b][#44bbaa]Key ID:[/#44bbaa][/b] {escape(str(record.key_id))}\n[b][#44bbaa]Email:[/#44bbaa][/b] {escape(str(record.email))}\n[b][#44bbaa]Description:[/#44bbaa][/b] {escape(str(record.description or 'None'))}"
-                elif self.current_view == "menu-db":
-                    record = Database.get(Database.name == name)
-                    detail_text = f"[b][#44bbaa]Name:[/#44bbaa][/b] {escape(str(record.name))}\n[b][#44bbaa]Type:[/#44bbaa][/b] {escape(str(record.type))}\n[b][#44bbaa]Host:[/#44bbaa][/b] {escape(str(record.host))}\n[b][#44bbaa]Port:[/#44bbaa][/b] {escape(str(record.port))}\n[b][#44bbaa]User:[/#44bbaa][/b] {escape(str(record.user))}\n[b][#44bbaa]Database Name:[/#44bbaa][/b] {escape(str(record.db_name))}\n[b][#44bbaa]Description:[/#44bbaa][/b] {escape(str(record.description or 'None'))}"
-
-            if self.current_view == "menu-ssh":
-                detail_text = f"[b][#44bbaa]Name:[/#44bbaa][/b] {row_data[0]}\
-[b][#44bbaa]Host:[/#44bbaa][/b] {row_data[1]}\
-[b][#44bbaa]User:[/#44bbaa][/b] {row_data[2]}\
-[b][#44bbaa]Port:[/#44bbaa][/b] {row_data[3]}\
-[b][#44bbaa]Identity File:[/#44bbaa][/b] {row_data[4] or 'None'}\
-[b][#44bbaa]Description:[/#44bbaa][/b] {row_data[5] or 'None'}"
-            elif self.current_view == "menu-gpg":
-                detail_text = f"[b][#44bbaa]Name:[/#44bbaa][/b] {row_data[0]}\
-[b][#44bbaa]Key ID:[/#44bbaa][/b] {row_data[1]}\
-[b][#44bbaa]Email:[/#44bbaa][/b] {row_data[2]}\
-[b][#44bbaa]Description:[/#44bbaa][/b] {row_data[3] or 'None'}"
-            elif self.current_view == "menu-db":
-                detail_text = f"[b][#44bbaa]Name:[/#44bbaa][/b] {row_data[0]}\
-[b][#44bbaa]Type:[/#44bbaa][/b] {row_data[1]}\
-[b][#44bbaa]Host:[/#44bbaa][/b] {row_data[2]}\
-[b][#44bbaa]Port:[/#44bbaa][/b] {row_data[3]}\
-[b][#44bbaa]User:[/#44bbaa][/b] {row_data[4]}\
-[b][#44bbaa]Database Name:[/#44bbaa][/b] {row_data[5]}\
-[b][#44bbaa]Description:[/#44bbaa][/b] {row_data[6] or 'None'}"
-
-            if detail_text:
-                detail_view.update(detail_text)
-        except Exception:
-            pass
 
     def load_data(self) -> None:
         table = self.query_one("#data_table")
