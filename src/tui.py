@@ -370,13 +370,18 @@ class TrackerApp(App):
     def action_edit_entry(self) -> None:
         self.edit_entry()
 
-    def action_delete_entry(self) -> None:
-        table = self.query_one("#data_table")
+    def get_selected_item_name(self) -> str | None:
+        table = self.query_one("#data_table", DataTable)
         try:
             row_key = table.coordinate_to_cell_key(table.cursor_coordinate).row_key
             row_data = table.get_row(row_key)
-            name = row_data[0] # The name is the first column
+            return str(row_data[0]) # The name is the first column
         except Exception:
+            return None
+
+    def action_delete_entry(self) -> None:
+        name = self.get_selected_item_name()
+        if not name:
             self.notify("Please select an item to delete.", severity="warning")
             return
 
@@ -412,12 +417,8 @@ class TrackerApp(App):
             self.action_delete_entry()
 
     def edit_entry(self) -> None:
-        table = self.query_one("#data_table")
-        try:
-            row_key = table.coordinate_to_cell_key(table.cursor_coordinate).row_key
-            row_data = table.get_row(row_key)
-            name = row_data[0] # The name is the first column
-        except Exception:
+        name = self.get_selected_item_name()
+        if not name:
             self.notify("Please select an item to edit.", severity="warning")
             return
 
