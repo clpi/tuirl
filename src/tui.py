@@ -271,7 +271,7 @@ class TrackerApp(App):
         self.setup_table(self.current_view)
 
         # Select first item
-        menu = self.query_one(ListView)
+        menu = self.query_one("#menu", ListView)
         menu.index = 0
 
     def on_list_view_selected(self, event: ListView.Selected) -> None:
