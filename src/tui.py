@@ -126,8 +126,6 @@ class TrackerApp(App):
         layout: horizontal;
         height: 100%;
         width: 100%;
-        padding: 1;
-        margin: 0;
     }
 
     #sidebar {
@@ -135,9 +133,13 @@ class TrackerApp(App):
         height: 100%;
         dock: left;
         background: $surface;
-        border: round $primary;
+        border: panel $surface-lighten-2;
         border-title-color: $text;
-        padding: 1;
+        border-title-style: bold;
+    }
+
+    #sidebar:focus-within {
+        border: panel $accent;
     }
 
     #sidebar > ListView {
@@ -146,34 +148,38 @@ class TrackerApp(App):
     }
 
     #sidebar > ListView > ListItem {
-        padding: 1 2;
+        padding: 0 1;
     }
 
     #sidebar > ListView > ListItem:focus {
-        background: $primary;
+        background: $accent-darken-2;
         color: $text;
     }
 
     #sidebar > ListView:focus > ListItem.--highlight {
-        background: $primary;
+        background: $accent;
         color: $text;
+        text-style: bold;
     }
 
     #main-content {
         width: 1fr;
         height: 100%;
         background: $surface;
-        border: round $primary;
+        border: panel $surface-lighten-2;
         border-title-color: $text;
-        padding: 1;
-        margin-left: 1;
+        border-title-style: bold;
+    }
+
+    #main-content:focus-within {
+        border: panel $accent;
     }
 
     #dialog {
         padding: 1 2;
         width: 60;
         height: auto;
-        border: round $primary;
+        border: panel $accent;
         background: $surface;
     }
 
@@ -201,6 +207,11 @@ class TrackerApp(App):
         background: transparent;
     }
 
+    DataTable > .datatable--cursor {
+        background: $accent;
+        color: $text;
+    }
+
     DataTable > .datatable--row-hover {
         background: $surface-lighten-1;
     }
@@ -218,8 +229,12 @@ class TrackerApp(App):
     #detail_tabs {
         height: 1fr;
         margin-top: 1;
-        border: round $primary;
-        background: $surface-lighten-1;
+        border: panel $surface-lighten-2;
+        background: $surface;
+    }
+
+    #detail_tabs:focus-within {
+        border: panel $accent;
     }
 
     #detail_view {
